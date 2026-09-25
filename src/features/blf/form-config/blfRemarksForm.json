@@ -1,0 +1,41 @@
+{
+  "title": "BLF Verification & Ground Scrutiny Form",
+  "description": "Form for Block Level Federation facilitators to log ground inspection notes and forward/tag SHG applications",
+  "fields": [
+    {
+      "name": "actionType",
+      "label": "Scrutiny Action",
+      "type": "radio",
+      "required": true,
+      "options": [
+        { "value": "Forward", "label": "Forward to Block Level Committee (BLC)" },
+        { "value": "Tag Existing", "label": "Tag Existing Registered SHG Cluster" }
+      ]
+    },
+    {
+      "name": "taggedExistingWshgId",
+      "label": "Select Existing Registered SHG",
+      "type": "select",
+      "required": false,
+      "options": [
+        { "value": "WSHG-EXIST-01", "label": "Maa Durga SHG (Registered 2023 - Khordha)" },
+        { "value": "WSHG-EXIST-02", "label": "Shakti Mahila Mandal (Registered 2024 - Jatni)" },
+        { "value": "WSHG-EXIST-03", "label": "Jagannath SHG Cluster (Registered 2022 - Balianta)" },
+        { "value": "WSHG-EXIST-04", "label": "Prerana Women Self Help Group (Registered 2023 - Banapur)" }
+      ]
+    },
+    {
+      "name": "l1Remarks",
+      "label": "L1 Ground Scrutiny Remarks",
+      "type": "textarea",
+      "required": true,
+      "placeholder": "Enter physical verification findings, member validation, and bank passbook status..."
+    },
+    {
+      "name": "defectNoteFile",
+      "label": "Attach Ground Verification / Inspection Memo",
+      "type": "file",
+      "required": false
+    }
+  ]
+}

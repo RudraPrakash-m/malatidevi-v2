@@ -1,0 +1,79 @@
+{
+  "title": "State Level Fund Allocation Form",
+  "description": "Form definition for state authority allocation of funds across districts and item categories",
+  "fields": [
+    {
+      "name": "financialYear",
+      "label": "Financial Year",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "2025-26", "label": "2025-26" },
+        { "value": "2026-27", "label": "2026-27" },
+        { "value": "2027-28", "label": "2027-28" }
+      ]
+    },
+    {
+      "name": "district",
+      "label": "District",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Angul", "label": "Angul" },
+        { "value": "Balangir", "label": "Balangir" },
+        { "value": "Balasore", "label": "Balasore" },
+        { "value": "Bargarh", "label": "Bargarh" },
+        { "value": "Bhadrak", "label": "Bhadrak" },
+        { "value": "Boudh", "label": "Boudh" },
+        { "value": "Cuttack", "label": "Cuttack" },
+        { "value": "Deogarh", "label": "Deogarh" },
+        { "value": "Dhenkanal", "label": "Dhenkanal" },
+        { "value": "Gajapati", "label": "Gajapati" },
+        { "value": "Ganjam", "label": "Ganjam" },
+        { "value": "Jagatsinghpur", "label": "Jagatsinghpur" },
+        { "value": "Jajpur", "label": "Jajpur" },
+        { "value": "Jharsuguda", "label": "Jharsuguda" },
+        { "value": "Kalahandi", "label": "Kalahandi" },
+        { "value": "Kandhamal", "label": "Kandhamal" },
+        { "value": "Kendrapara", "label": "Kendrapara" },
+        { "value": "Kendujhar", "label": "Kendujhar" },
+        { "value": "Khordha", "label": "Khordha" },
+        { "value": "Koraput", "label": "Koraput" },
+        { "value": "Malkangiri", "label": "Malkangiri" },
+        { "value": "Mayurbhanj", "label": "Mayurbhanj" },
+        { "value": "Nabarangpur", "label": "Nabarangpur" },
+        { "value": "Nayagarh", "label": "Nayagarh" },
+        { "value": "Nuapada", "label": "Nuapada" },
+        { "value": "Puri", "label": "Puri" },
+        { "value": "Rayagada", "label": "Rayagada" },
+        { "value": "Sambalpur", "label": "Sambalpur" },
+        { "value": "Subarnapur", "label": "Subarnapur" },
+        { "value": "Sundargarh", "label": "Sundargarh" }
+      ]
+    },
+    {
+      "name": "itemCategory",
+      "label": "Item Category / Entitlement",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Uniform", "label": "Uniform" },
+        { "value": "Sweater", "label": "Sweater" },
+        { "value": "Shoes & Socks", "label": "Shoes & Socks" }
+      ]
+    },
+    {
+      "name": "allocatedAmount",
+      "label": "Sanctioned / Allocated Amount (₹)",
+      "type": "number",
+      "required": true,
+      "min": 1
+    },
+    {
+      "name": "remarks",
+      "label": "Sanction Remarks & Orders",
+      "type": "textarea",
+      "required": false
+    }
+  ]
+}

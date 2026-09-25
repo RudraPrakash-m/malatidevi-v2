@@ -1,0 +1,66 @@
+{
+  "title": "DSWO District Fund Request Form",
+  "description": "Form for District Social Welfare Officers to request entitlement funds from the State Directorate",
+  "fields": [
+    {
+      "name": "financialYear",
+      "label": "Financial Year",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "2025-26", "label": "2025-26" },
+        { "value": "2026-27", "label": "2026-27" },
+        { "value": "2027-28", "label": "2027-28" }
+      ]
+    },
+    {
+      "name": "district",
+      "label": "District",
+      "type": "text",
+      "required": true,
+      "disabled": true
+    },
+    {
+      "name": "project",
+      "label": "Project / Block",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Project 1 (Urban)", "label": "Project 1 (Urban)" },
+        { "value": "Project 2 (Rural)", "label": "Project 2 (Rural)" },
+        { "value": "Project 3 (Tribal)", "label": "Project 3 (Tribal)" }
+      ]
+    },
+    {
+      "name": "itemCategory",
+      "label": "Item Category / Package",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Uniform", "label": "Uniform" },
+        { "value": "Sweater", "label": "Sweater" },
+        { "value": "Shoes & Socks", "label": "Shoes & Socks" }
+      ]
+    },
+    {
+      "name": "totalChildren",
+      "label": "Total Eligible Beneficiary Children",
+      "type": "number",
+      "required": true,
+      "min": 1
+    },
+    {
+      "name": "requestedAmt",
+      "label": "Total Requested Fund Amount (₹)",
+      "type": "number",
+      "required": true,
+      "min": 1
+    },
+    {
+      "name": "purpose",
+      "label": "Purpose & Requisition Justification",
+      "type": "textarea",
+      "required": true
+    }
+  ]
+}

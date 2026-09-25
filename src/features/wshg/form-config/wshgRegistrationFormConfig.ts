@@ -1,0 +1,170 @@
+import React from 'react';
+import type { FormField } from '@/shared/components/ui/Forms/form.types';
+import { Building2, Landmark } from 'lucide-react';
+import ContactOtpField from '../components/ContactOtpField';
+
+export const wshgRegistrationFormConfig: FormField[] = [
+  // Section 1: Basic Details / SHG Information
+  {
+    name: 'basicDetailsHeading',
+    label: 'Basic Information',
+    type: 'heading',
+    icon: Building2,
+    noBorder: true,
+  },
+  {
+    name: 'district',
+    label: 'District',
+    type: 'select',
+    required: true,
+    placeholder: 'Select District',
+    options: [
+      { label: 'Khordha', value: 'Khordha' },
+      { label: 'Cuttack', value: 'Cuttack' },
+      { label: 'Puri', value: 'Puri' },
+      { label: 'Ganjam', value: 'Ganjam' },
+      { label: 'Sambalpur', value: 'Sambalpur' },
+      { label: 'Balasore', value: 'Balasore' },
+    ],
+    gridColumn: 2,
+  },
+  {
+    name: 'project',
+    label: 'Project',
+    type: 'select',
+    required: true,
+    placeholder: 'Select Project',
+    options: [
+      { label: 'Project 1', value: 'Project 1' },
+      { label: 'Project 2', value: 'Project 2' },
+      { label: 'Project 3', value: 'Project 3' },
+    ],
+    gridColumn: 2,
+  },
+  {
+    name: 'wshgRegNo',
+    label: 'SHG Registration No',
+    type: 'text',
+    required: true,
+    placeholder: 'Enter SHG Registration No',
+    gridColumn: 3,
+  },
+  {
+    name: 'wshgName',
+    label: 'SHG Name',
+    type: 'text',
+    required: true,
+    placeholder: 'Enter SHG Name',
+    gridColumn: 3,
+  },
+  {
+    name: 'contact',
+    label: 'Contact No',
+    type: 'tel',
+    required: true,
+    placeholder: 'Enter Contact No',
+    maxLength: 10,
+    gridColumn: 2,
+    render: (value, onChange, error) =>
+      React.createElement(ContactOtpField, {
+        value,
+        onChange,
+        error,
+        label: 'Contact No',
+        required: true,
+      }),
+  },
+  {
+    name: 'email',
+    label: 'Email',
+    type: 'email',
+    placeholder: 'Enter Email Address',
+    gridColumn: 3,
+  },
+  {
+    name: 'address',
+    label: 'Address',
+    type: 'textarea',
+    required: true,
+    rows: 2,
+    placeholder: 'Enter Full Address',
+    gridColumn: 4,
+  },
+  {
+    name: 'supportingDocument',
+    label: 'Supporting Document Upload',
+    type: 'file',
+    required: true,
+    accept: '.pdf,.jpg,.jpeg,.png',
+    helpText: 'Upload SHG Registration Certificate or Supporting Proof (PDF/JPG)',
+    gridColumn: 4,
+  },
+
+  // Section 2: Bank Details
+  {
+    name: 'bankDetailsHeading',
+    label: 'Bank Details',
+    type: 'heading',
+    icon: Landmark,
+  },
+  {
+    name: 'bankName',
+    label: 'Bank Name',
+    type: 'text',
+    required: true,
+    placeholder: '',
+    gridColumn: 3,
+  },
+  // {
+  //   name: 'branchName',
+  //   label: 'Branch Name',
+  //   type: 'text',
+  //   required: true,
+  //   placeholder: '',
+  //   gridColumn: 3,
+  // },
+  {
+    name: 'accountHolderName',
+    label: 'Account Holder Name',
+    type: 'text',
+    required: true,
+    placeholder: '',
+    gridColumn: 3,
+  },
+  // {
+  //   name: 'accountType',
+  //   label: 'Account Type',
+  //   type: 'select',
+  //   required: true,
+  //   placeholder: 'Select Account Type',
+  //   options: [
+  //     { label: 'Savings Account', value: 'Savings' },
+  //     { label: 'Current Account', value: 'Current' },
+  //   ],
+  //   gridColumn: 3,
+  // },
+  {
+    name: 'bankAccountNo',
+    label: 'Bank Account No.',
+    type: 'text',
+    required: true,
+    placeholder: '',
+    gridColumn: 2,
+  },
+ 
+  {
+    name: 'ifsc',
+    label: 'IFSC Code',
+    type: 'text',
+    required: true,
+    placeholder: '',
+    gridColumn: 2,
+  },
+  {
+    name: 'bankPassbook',
+    label: 'Bank Passbook Upload',
+    type: 'file',
+    required: true,
+    gridColumn: 2,
+  },
+];

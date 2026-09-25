@@ -1,0 +1,32 @@
+{
+  "title": "BLC Committee Inspection & Resolution Form",
+  "description": "Form for Block Level Committee to record scrutiny resolution, committee remarks, and grant final approval",
+  "fields": [
+    {
+      "name": "committeeResolutionNumber",
+      "label": "Committee Resolution / Minute No.",
+      "type": "text",
+      "required": true,
+      "placeholder": "e.g. BLC/RES/2026/045"
+    },
+    {
+      "name": "meetingDate",
+      "label": "Committee Meeting Date",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "l2Remarks",
+      "label": "L2 Committee Inspection Remarks",
+      "type": "textarea",
+      "required": true,
+      "placeholder": "Enter committee recommendations, passbook validation, and final approval justification..."
+    },
+    {
+      "name": "inspectionReportFile",
+      "label": "Attach Signed Committee Resolution / Minute Copy",
+      "type": "file",
+      "required": false
+    }
+  ]
+}

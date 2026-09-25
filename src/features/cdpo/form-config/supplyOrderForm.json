@@ -1,0 +1,77 @@
+{
+  "title": "Create Project Supply Order",
+  "description": "Form for CDPO project authorities to generate work orders and supply indents to approved SHGs",
+  "fields": [
+    {
+      "name": "financialYear",
+      "label": "Financial Year",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "2025-26", "label": "2025-26" },
+        { "value": "2026-27", "label": "2026-27" },
+        { "value": "2027-28", "label": "2027-28" }
+      ]
+    },
+    {
+      "name": "project",
+      "label": "CDPO Project",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "sector",
+      "label": "Sector Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "shgName",
+      "label": "Assigned SHG Supplier",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Maa Tarini Self Help Group", "label": "Maa Tarini Self Help Group (SHG-OD-001)" },
+        { "value": "Sakhi Mahila Samiti", "label": "Sakhi Mahila Samiti (SHG-OD-002)" },
+        { "value": "Mission Shakti Federation Unit", "label": "Mission Shakti Federation Unit (SHG-OD-003)" }
+      ]
+    },
+    {
+      "name": "itemCategory",
+      "label": "Entitlement Item Package",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Uniform", "label": "Uniform Pairs (2 sets per child)" },
+        { "value": "Sweater", "label": "Winter Sweaters" },
+        { "value": "Shoes & Socks", "label": "Shoes & Socks" }
+      ]
+    },
+    {
+      "name": "awcCount",
+      "label": "Target Anganwadi Centres (AWCs)",
+      "type": "number",
+      "required": true,
+      "min": 1
+    },
+    {
+      "name": "totalUnitsOrdered",
+      "label": "Total Quantity / Units Ordered",
+      "type": "number",
+      "required": true,
+      "min": 1
+    },
+    {
+      "name": "expectedDeliveryDate",
+      "label": "Expected Delivery Date",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "remarks",
+      "label": "Work Order Instructions & Specifications",
+      "type": "textarea",
+      "required": false
+    }
+  ]
+}

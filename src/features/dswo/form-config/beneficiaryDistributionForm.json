@@ -1,0 +1,63 @@
+{
+  "title": "Beneficiary Entitlement Distribution Form",
+  "description": "Log and track child entitlement distributions across Anganwadi Centres",
+  "fields": [
+    {
+      "name": "financialYear",
+      "label": "Financial Year",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "2025-26", "label": "2025-26" },
+        { "value": "2026-27", "label": "2026-27" }
+      ]
+    },
+    {
+      "name": "project",
+      "label": "Project Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "sector",
+      "label": "Sector Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "awcName",
+      "label": "Anganwadi Centre (AWC) Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "itemCategory",
+      "label": "Entitlement Item",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "Uniform Pair (2 Sets)", "label": "Uniform Pair (2 Sets)" },
+        { "value": "Winter Sweater", "label": "Winter Sweater" },
+        { "value": "Shoes & Socks", "label": "Shoes & Socks" }
+      ]
+    },
+    {
+      "name": "totalEligibleChildren",
+      "label": "Registered Eligible Children",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "distributedCount",
+      "label": "Actual Distributed Kits Count",
+      "type": "number",
+      "required": true
+    },
+    {
+      "name": "distributionDate",
+      "label": "Distribution Date",
+      "type": "date",
+      "required": true
+    }
+  ]
+}
