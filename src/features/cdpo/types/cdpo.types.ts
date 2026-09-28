@@ -8,7 +8,7 @@ export interface SupplyOrderItem {
   sector: string;
   shgName: string;
   shgRegNo: string;
-  itemCategory: 'Uniform' | 'Sweater' | 'Shoes & Socks' | string;
+  itemCategory: 'Uniform' | 'Sweater' | string;
   awcCount: number;
   totalUnitsOrdered: number;
   unitPrice: number;

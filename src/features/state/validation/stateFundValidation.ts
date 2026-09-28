@@ -7,7 +7,7 @@ export const stateFundAllocationSchema = z.object({
   district: z.string().min(1, 'Please select district'),
   itemCategory: z.string().min(1, 'Please select item category'),
   allocatedAmount: z
-    .number({ invalid_type_error: 'Allocated amount must be a number' })
+    .number({ message: 'Allocated amount must be a number' })
     .positive('Allocated amount must be greater than 0'),
   remarks: z.string().optional(),
 });

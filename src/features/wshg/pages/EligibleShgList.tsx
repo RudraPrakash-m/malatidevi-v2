@@ -4,13 +4,9 @@ import React, { useState, useMemo } from 'react';
 import type { MRT_ColumnDef } from 'material-react-table';
 import {
   Building2,
-  CheckCircle2,
-  XCircle,
   RotateCcw,
   Search,
-  Users,
-  CreditCard,
-  ShieldCheck,
+  Filter,
 } from 'lucide-react';
 import Card from '@/shared/components/layout/Card';
 import Button from '@/shared/components/ui/Button';
@@ -239,6 +235,15 @@ export const EligibleShgList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [appliedFilters, setAppliedFilters] = useState<{
+    status: string;
+    date: string;
+    search: string;
+  }>({
+    status: 'all',
+    date: '',
+    search: '',
+  });
   const [selectedShg, setSelectedShg] = useState<EligibleShgItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
@@ -254,21 +259,44 @@ export const EligibleShgList: React.FC = () => {
     setSelectedShg(null);
   };
 
+  // Check if any filter is active
+  const isFilterActive =
+    statusFilter !== 'all' ||
+    dateFilter !== '' ||
+    searchQuery !== '' ||
+    appliedFilters.status !== 'all' ||
+    appliedFilters.date !== '' ||
+    appliedFilters.search !== '';
+
+  // Apply filters
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      status: statusFilter,
+      date: dateFilter,
+      search: searchQuery,
+    });
+  };
+
   // Reset filters
   const handleResetFilters = () => {
     setStatusFilter('all');
     setDateFilter('');
     setSearchQuery('');
+    setAppliedFilters({
+      status: 'all',
+      date: '',
+      search: '',
+    });
   };
 
-  // Filtered dataset
+  // Filtered dataset based on appliedFilters
   const filteredData = useMemo(() => {
     return data.filter((item) => {
-      if (statusFilter !== 'all' && item.status !== statusFilter) {
+      if (appliedFilters.status !== 'all' && item.status !== appliedFilters.status) {
         return false;
       }
-      if (dateFilter && dateFilter.trim()) {
-        const filterDateRaw = dateFilter.trim();
+      if (appliedFilters.date && appliedFilters.date.trim()) {
+        const filterDateRaw = appliedFilters.date.trim();
         let filterDateNormalized = filterDateRaw;
         if (filterDateRaw.includes('-')) {
           const [y, m, d] = filterDateRaw.split('-');
@@ -287,8 +315,8 @@ export const EligibleShgList: React.FC = () => {
           return false;
         }
       }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
+      if (appliedFilters.search && appliedFilters.search.trim()) {
+        const q = appliedFilters.search.toLowerCase().trim();
         const matchesName = item.shgName.toLowerCase().includes(q);
         const matchesAppId = item.applicationId.toLowerCase().includes(q);
         const matchesSector = item.sector.toLowerCase().includes(q);
@@ -306,7 +334,7 @@ export const EligibleShgList: React.FC = () => {
       }
       return true;
     });
-  }, [data, statusFilter, dateFilter, searchQuery]);
+  }, [data, appliedFilters]);
 
   // Counts
   const totalCount = data.length;
@@ -366,18 +394,12 @@ export const EligibleShgList: React.FC = () => {
           const isActive = status === 'active';
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                isActive
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-              }`}
+              className={`text-xs font-semibold ${isActive
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-rose-600 dark:text-rose-400'
+                }`}
             >
-              {isActive ? (
-                <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <XCircle size={12} className="text-slate-500 dark:text-slate-400" />
-              )}
-              <span>{isActive ? 'Active' : 'Inactive'}</span>
+              {isActive ? 'Active' : 'Inactive'}
             </span>
           );
         },
@@ -436,17 +458,17 @@ export const EligibleShgList: React.FC = () => {
         title="Eligible SHG List"
         icon={Building2}
         action={
-          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-            <span>
-              Total Eligible: <strong className="text-slate-800 dark:text-slate-200">{totalCount}</strong>
+          <div className="flex items-center gap-3 text-xs font-medium">
+            <span className="text-blue-600 dark:text-blue-400">
+              Total Eligible: <strong className="font-bold text-blue-700 dark:text-blue-300">{totalCount}</strong>
             </span>
-            <span>|</span>
-            <span>
-              Active: <strong className="text-emerald-600 dark:text-emerald-400">{activeCount}</strong>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-emerald-600 dark:text-emerald-400">
+              Active: <strong className="font-bold text-emerald-700 dark:text-emerald-300">{activeCount}</strong>
             </span>
-            <span>|</span>
-            <span>
-              Inactive: <strong className="text-slate-500 dark:text-slate-400">{inactiveCount}</strong>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-rose-600 dark:text-rose-400">
+              Inactive: <strong className="font-bold text-rose-700 dark:text-rose-300">{inactiveCount}</strong>
             </span>
           </div>
         }
@@ -455,7 +477,7 @@ export const EligibleShgList: React.FC = () => {
           {/* Quick Filters */}
           <div className="grid grid-cols-12 gap-4 items-end pb-3 border-b border-slate-200 dark:border-slate-800">
             {/* Search Input */}
-            <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
               <Input
                 id="search-shg"
                 name="searchShg"
@@ -463,7 +485,7 @@ export const EligibleShgList: React.FC = () => {
                 placeholder="Search by name, ID, sector..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                icon={<Search size={16} />}
+                icon={<Search size={15} />}
               />
             </div>
 
@@ -492,17 +514,26 @@ export const EligibleShgList: React.FC = () => {
               />
             </div>
 
-            {/* Reset Action */}
-            <div className="col-span-12 sm:col-span-6 lg:col-span-2">
+            {/* Filter & Reset Action */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex items-center gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="outline-primary"
                 size="md"
-                label="Reset"
-                icon={<RotateCcw size={15} />}
-                onClick={handleResetFilters}
-                className="w-full"
+                label="Filter"
+                icon={<Filter size={15} />}
+                onClick={handleApplyFilters}
               />
+              {isFilterActive && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  label="Reset"
+                  icon={<RotateCcw size={15} />}
+                  onClick={handleResetFilters}
+                />
+              )}
             </div>
           </div>
 
@@ -522,23 +553,11 @@ export const EligibleShgList: React.FC = () => {
         <Modal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          size="lg"
+          size="2xl"
           title={`SHG Details - ${selectedShg.shgName}`}
           subtitle={`Registration & Verification Details for ${selectedShg.applicationId}`}
           footer={
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  Status:{' '}
-                  <strong className={selectedShg.status === 'active' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}>
-                    {selectedShg.status === 'active' ? 'Active' : 'Inactive'}
-                  </strong>
-                </span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                  Code: {selectedShg.shgCode}
-                </span>
-              </div>
-
+            <div className="flex items-center justify-end w-full">
               <Button
                 type="button"
                 variant="outline"
@@ -549,101 +568,172 @@ export const EligibleShgList: React.FC = () => {
             </div>
           }
         >
-          <div className="space-y-4">
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 shadow-2xs">
-                <p className="text-[11px] font-medium text-blue-700 dark:text-blue-300">Application ID</p>
-                <p className="text-xs font-bold font-mono text-blue-900 dark:text-blue-100 truncate">{selectedShg.applicationId}</p>
+          <div className="p-1 space-y-4">
+            <div className="grid grid-cols-12 gap-3.5">
+              {/* Row 1: Basic Identifiers */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-application-id"
+                  name="applicationId"
+                  label="Application ID"
+                  value={selectedShg.applicationId}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-shg-code"
+                  name="shgCode"
+                  label="SHG Code"
+                  value={selectedShg.shgCode}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-shg-name"
+                  name="shgName"
+                  label="SHG Name"
+                  value={selectedShg.shgName}
+                  disabled
+                />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 shadow-2xs">
-                <p className="text-[11px] font-medium text-indigo-700 dark:text-indigo-300">Total Members</p>
-                <p className="text-sm font-bold font-mono text-indigo-900 dark:text-indigo-100">{selectedShg.totalMembers} Members</p>
+              {/* Row 2: Leadership & Location */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-president"
+                  name="presidentName"
+                  label="President / Leader"
+                  value={selectedShg.presidentName}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-contact"
+                  name="contactNumber"
+                  label="Contact Number"
+                  value={selectedShg.contactNumber}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-district"
+                  name="district"
+                  label="District"
+                  value={selectedShg.district}
+                  disabled
+                />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200/70 dark:border-purple-900/60 shadow-2xs">
-                <p className="text-[11px] font-medium text-purple-700 dark:text-purple-300">Tagged AWCs</p>
-                <p className="text-sm font-bold font-mono text-purple-900 dark:text-purple-100">{selectedShg.taggedAwcCount} Centers</p>
+              {/* Row 3: Sector & Capacities */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-sector"
+                  name="sector"
+                  label="Sector"
+                  value={selectedShg.sector}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-members"
+                  name="totalMembers"
+                  label="Total Members"
+                  value={`${selectedShg.totalMembers} Members`}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-tagged-awc"
+                  name="taggedAwc"
+                  label="Tagged AWCs"
+                  value={`${selectedShg.taggedAwcCount} Centers`}
+                  disabled
+                />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/60 shadow-2xs">
-                <p className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Approval Date</p>
-                <p className="text-xs font-bold font-mono text-emerald-900 dark:text-emerald-100">{selectedShg.dateOfApprove}</p>
+              {/* Row 4: Dates & Status */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-apply-date"
+                  name="dateOfApply"
+                  label="Date of Application"
+                  value={selectedShg.dateOfApply}
+                  disabled
+                />
               </div>
-            </div>
-
-            {/* General Profile Box */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Users size={15} className="text-primary" />
-                <span>SHG Profile & Leadership</span>
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">SHG Name: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.shgName}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">President / Leader: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.presidentName}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">Contact Number: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.contactNumber}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">District & Sector: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.sector}, {selectedShg.district}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">Date of Application: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.dateOfApply}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">Date of Approval: </span>
-                  <strong className="text-slate-800 dark:text-slate-200">{selectedShg.dateOfApprove}</strong>
-                </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-approve-date"
+                  name="dateOfApprove"
+                  label="Date of Approval"
+                  value={selectedShg.dateOfApprove}
+                  disabled
+                />
               </div>
-            </div>
-
-            {/* Bank Information Box */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <CreditCard size={15} className="text-primary" />
-                <span>Verified Bank Account Details</span>
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">Bank Name: </span>
-                  <strong className="text-slate-800 dark:text-slate-200 block">{selectedShg.bankName}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">Account Number: </span>
-                  <strong className="font-mono text-slate-800 dark:text-slate-200 block">{selectedShg.accountNumber}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400">IFSC Code: </span>
-                  <strong className="font-mono text-slate-800 dark:text-slate-200 block">{selectedShg.ifscCode}</strong>
-                </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-status"
+                  name="status"
+                  label="Status"
+                  value={selectedShg.status === 'active' ? 'Active' : 'Inactive'}
+                  disabled
+                />
               </div>
-            </div>
 
-            {/* Verification & Approval Authority */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <ShieldCheck size={15} className="text-primary" />
-                <span>Verification & Eligibility Status</span>
-              </h4>
-              <p className="text-xs text-slate-700 dark:text-slate-300">
-                <span className="text-slate-500 dark:text-slate-400">Approved Authority: </span>
-                <strong>{selectedShg.approvedBy}</strong>
-              </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 italic">
-                &ldquo;{selectedShg.remarks}&rdquo;
-              </p>
+              {/* Row 5: Bank Details */}
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-bank-name"
+                  name="bankName"
+                  label="Bank Name"
+                  value={selectedShg.bankName}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-account-no"
+                  name="accountNumber"
+                  label="Account Number"
+                  value={selectedShg.accountNumber}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                <Input
+                  id="modal-ifsc"
+                  name="ifscCode"
+                  label="IFSC Code"
+                  value={selectedShg.ifscCode}
+                  disabled
+                />
+              </div>
+
+              {/* Row 6: Approval Authority & Remarks */}
+              <div className="col-span-12 sm:col-span-6">
+                <Input
+                  id="modal-approved-by"
+                  name="approvedBy"
+                  label="Approved Authority"
+                  value={selectedShg.approvedBy}
+                  disabled
+                />
+              </div>
+              <div className="col-span-12 sm:col-span-6">
+                <Input
+                  id="modal-remarks"
+                  name="remarks"
+                  label="Remarks"
+                  value={selectedShg.remarks || '—'}
+                  disabled
+                />
+              </div>
             </div>
           </div>
         </Modal>

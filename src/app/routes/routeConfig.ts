@@ -137,6 +137,11 @@ export const routes = {
     label: "Fund Allocation Table",
     protected: true,
   },
+  requisitionList: {
+    path: "/requisition-list",
+    label: "Requisition List",
+    protected: true,
+  },
 
   // State Role Aliases
   stateDashboard: {

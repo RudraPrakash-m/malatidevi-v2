@@ -512,54 +512,90 @@ const FundAllocationn: React.FC = () => {
         header: 'Sl No',
         size: 70,
         minSize: 60,
-        Cell: ({ row }) => (
-          <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs">
-            {row.index + 1}
-          </span>
-        ),
+        Cell: ({ row }) => {
+          const isSelected = selectedProjectIds.includes(row.original.id);
+          return (
+            <span
+              className={`font-semibold text-xs ${
+                isSelected
+                  ? 'text-slate-700 dark:text-slate-300'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
+            >
+              {row.index + 1}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'projectName',
         header: 'Project Name',
         size: 260,
         minSize: 220,
-        Cell: ({ cell }) => (
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
-              <Building2 size={14} />
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
-              {cell.getValue<string>()}
-            </span>
-          </div>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedProjectIds.includes(row.original.id);
+          return (
+            <div className={`flex items-center gap-2 ${!isSelected ? 'opacity-60' : ''}`}>
+              <span className="p-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+                <Building2 size={14} />
+              </span>
+              <span
+                className={`font-semibold text-xs ${
+                  isSelected
+                    ? 'text-slate-900 dark:text-slate-100'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {cell.getValue<string>()}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'cdpoName',
         header: 'CDPO Name',
         size: 220,
         minSize: 180,
-        Cell: ({ cell }) => (
-          <span className="text-slate-700 dark:text-slate-300 text-xs font-medium">
-            {cell.getValue<string>()}
-          </span>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedProjectIds.includes(row.original.id);
+          return (
+            <span
+              className={`text-xs font-medium ${
+                isSelected
+                  ? 'text-slate-700 dark:text-slate-300'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
+            >
+              {cell.getValue<string>()}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'totalChildren',
         header: 'Total Children',
         size: 140,
         minSize: 120,
-        Cell: ({ cell }) => (
-          <div className="flex items-center gap-1.5">
-            <span className="p-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-              <Users size={13} />
-            </span>
-            <span className="font-bold font-mono text-slate-800 dark:text-slate-200 text-xs">
-              {cell.getValue<number>() ?? 0}
-            </span>
-          </div>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedProjectIds.includes(row.original.id);
+          return (
+            <div className={`flex items-center gap-1.5 ${!isSelected ? 'opacity-60' : ''}`}>
+              <span className="p-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                <Users size={13} />
+              </span>
+              <span
+                className={`font-bold font-mono text-xs ${
+                  isSelected
+                    ? 'text-slate-800 dark:text-slate-200'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {cell.getValue<number>() ?? 0}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'amount',
@@ -568,6 +604,7 @@ const FundAllocationn: React.FC = () => {
         minSize: 180,
         Cell: ({ row }) => {
           const item = row.original;
+          const isSelected = selectedProjectIds.includes(item.id);
           const currentVal = customProjectAmounts[item.id] !== undefined ? customProjectAmounts[item.id] : '';
 
           return (
@@ -578,6 +615,7 @@ const FundAllocationn: React.FC = () => {
                   name={`proj-amt-${item.id}`}
                   type="number"
                   min={0}
+                  disabled={!isSelected}
                   value={currentVal === '' ? '' : currentVal}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -585,7 +623,11 @@ const FundAllocationn: React.FC = () => {
                   }}
                   placeholder="0"
                   wrapperClassName="mb-0"
-                  className="text-right font-mono font-semibold text-xs py-1 transition-colors text-slate-800 dark:text-slate-100"
+                  className={`text-right font-mono font-semibold text-xs py-1 transition-colors ${
+                    !isSelected
+                      ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-700'
+                      : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border-primary/50 focus:border-primary'
+                  }`}
                 />
               </div>
             </div>
@@ -732,60 +774,105 @@ const FundAllocationn: React.FC = () => {
         header: 'Sl No',
         size: 70,
         minSize: 60,
-        Cell: ({ row }) => (
-          <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs">
-            {row.index + 1}
-          </span>
-        ),
+        Cell: ({ row }) => {
+          const isSelected = selectedAwcIds.includes(row.original.id);
+          return (
+            <span
+              className={`font-semibold text-xs ${
+                isSelected
+                  ? 'text-slate-700 dark:text-slate-300'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
+            >
+              {row.index + 1}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'awcCode',
         header: 'AWC Code',
         size: 130,
         minSize: 110,
-        Cell: ({ cell }) => (
-          <span className="font-mono font-bold text-xs text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
-            {cell.getValue<string>()}
-          </span>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedAwcIds.includes(row.original.id);
+          return (
+            <span
+              className={`font-mono font-bold text-xs px-2 py-0.5 rounded border ${
+                isSelected
+                  ? 'text-primary bg-primary/10 border-primary/20'
+                  : 'text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              {cell.getValue<string>()}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'awcName',
         header: 'AWC Name',
         size: 240,
         minSize: 200,
-        Cell: ({ cell }) => (
-          <span className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
-            {cell.getValue<string>()}
-          </span>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedAwcIds.includes(row.original.id);
+          return (
+            <span
+              className={`font-semibold text-xs ${
+                isSelected
+                  ? 'text-slate-900 dark:text-slate-100'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              {cell.getValue<string>()}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'awwName',
         header: 'AWW Name',
         size: 200,
         minSize: 170,
-        Cell: ({ cell }) => (
-          <span className="text-slate-700 dark:text-slate-300 text-xs font-medium">
-            {cell.getValue<string>()}
-          </span>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedAwcIds.includes(row.original.id);
+          return (
+            <span
+              className={`text-xs font-medium ${
+                isSelected
+                  ? 'text-slate-700 dark:text-slate-300'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
+            >
+              {cell.getValue<string>()}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'totalChildren',
         header: 'Total Children',
         size: 130,
         minSize: 110,
-        Cell: ({ cell }) => (
-          <div className="flex items-center gap-1.5">
-            <span className="p-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-              <Users size={13} />
-            </span>
-            <span className="font-bold font-mono text-slate-800 dark:text-slate-200 text-xs">
-              {cell.getValue<number>() ?? 0}
-            </span>
-          </div>
-        ),
+        Cell: ({ row, cell }) => {
+          const isSelected = selectedAwcIds.includes(row.original.id);
+          return (
+            <div className={`flex items-center gap-1.5 ${!isSelected ? 'opacity-60' : ''}`}>
+              <span className="p-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                <Users size={13} />
+              </span>
+              <span
+                className={`font-bold font-mono text-xs ${
+                  isSelected
+                    ? 'text-slate-800 dark:text-slate-200'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {cell.getValue<number>() ?? 0}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'amount',
@@ -794,6 +881,7 @@ const FundAllocationn: React.FC = () => {
         minSize: 180,
         Cell: ({ row }) => {
           const item = row.original;
+          const isSelected = selectedAwcIds.includes(item.id);
           const currentVal = customAwcAmounts[item.id] !== undefined ? customAwcAmounts[item.id] : '';
 
           return (
@@ -804,6 +892,7 @@ const FundAllocationn: React.FC = () => {
                   name={`awc-amt-${item.id}`}
                   type="number"
                   min={0}
+                  disabled={!isSelected}
                   value={currentVal === '' ? '' : currentVal}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -811,7 +900,11 @@ const FundAllocationn: React.FC = () => {
                   }}
                   placeholder="0"
                   wrapperClassName="mb-0"
-                  className="text-right font-mono font-semibold text-xs py-1 transition-colors text-slate-800 dark:text-slate-100"
+                  className={`text-right font-mono font-semibold text-xs py-1 transition-colors ${
+                    !isSelected
+                      ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-700'
+                      : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border-primary/50 focus:border-primary'
+                  }`}
                 />
               </div>
             </div>

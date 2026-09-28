@@ -3,12 +3,10 @@
 import React, { useMemo } from 'react';
 import type { MRT_ColumnDef } from 'material-react-table';
 import {
-  CheckCircle2,
   Forward,
   Check,
   FileText,
   Camera,
-  XCircle,
 } from 'lucide-react';
 import { ReusableTable } from '@/shared/components/ui/Table';
 import ActionButtons from '@/shared/components/ui/Actions/ActionButtons';
@@ -45,20 +43,20 @@ export const CheckTable: React.FC<CheckTableProps> = ({
     if (role === 'BLC') {
       if (status === 'rejected') {
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400">
-            <XCircle size={12} /> Rejected
+          <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            Rejected
           </span>
         );
       }
       if (status === 'approved') {
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-400">
-            <CheckCircle2 size={12} /> Approved
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            Approved
           </span>
         );
       }
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
           Pending
         </span>
       );
@@ -68,53 +66,53 @@ export const CheckTable: React.FC<CheckTableProps> = ({
     if (role === 'BLF') {
       if (status === 'pending_blc') {
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
             Pending at BLC
           </span>
         );
       }
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
           Pending
         </span>
       );
     }
 
-    // Default status badges for DSWO and other logins
+    // Default status display for DSWO and other logins
     switch (status) {
       case 'approved':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-400">
-            <CheckCircle2 size={12} /> Approved
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            Approved
           </span>
         );
       case 'rejected':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400">
-            <XCircle size={12} /> Rejected
+          <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            Rejected
           </span>
         );
       case 'pending_blf':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
             Pending at BLF
           </span>
         );
       case 'pending_blc':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
             Pending at BLC
           </span>
         );
       case 'pending_dswo':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
             Pending
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
             {status}
           </span>
         );
@@ -319,6 +317,7 @@ export const CheckTable: React.FC<CheckTableProps> = ({
             );
           }
 
+          const isForwardDisabled = item.status === 'pending_blc';
           const actionTooltip =
             currentRole === 'DSWO'
               ? 'Forward to BLF'
@@ -332,8 +331,9 @@ export const CheckTable: React.FC<CheckTableProps> = ({
                 /* BLC: Final Approve icon in single consistent success style */
                 <button
                   type="button"
+                  disabled={item.status === 'approved' || item.status === 'rejected'}
                   onClick={() => onForward(item)}
-                  className="w-7 h-7 rounded-full bg-action-success-bg text-action-success-text hover:opacity-80 transition-all inline-flex items-center justify-center hover:shadow-sm cursor-pointer"
+                  className="w-7 h-7 rounded-full bg-action-success-bg text-action-success-text hover:opacity-80 transition-all inline-flex items-center justify-center hover:shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   title={actionTooltip}
                   aria-label={actionTooltip}
                 >
@@ -343,10 +343,15 @@ export const CheckTable: React.FC<CheckTableProps> = ({
                 /* DSWO & BLF: One Forward Icon kept consistent across pages in a single color */
                 <button
                   type="button"
+                  disabled={isForwardDisabled}
                   onClick={() => onForward(item)}
-                  className="w-7 h-7 rounded-full bg-orange-100 hover:bg-orange-200 active:bg-orange-300 text-orange-700 dark:bg-orange-950/70 dark:text-orange-300 inline-flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs"
-                  title={actionTooltip}
-                  aria-label={actionTooltip}
+                  className={`w-7 h-7 rounded-full inline-flex items-center justify-center transition-all duration-200 shadow-2xs ${
+                    isForwardDisabled
+                      ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 opacity-50 cursor-not-allowed'
+                      : 'bg-orange-100 hover:bg-orange-200 active:bg-orange-300 text-orange-700 dark:bg-orange-950/70 dark:text-orange-300 hover:shadow-xs cursor-pointer'
+                  }`}
+                  title={isForwardDisabled ? 'Already forwarded to BLC' : actionTooltip}
+                  aria-label={isForwardDisabled ? 'Already forwarded to BLC' : actionTooltip}
                 >
                   <Forward size={14} />
                 </button>

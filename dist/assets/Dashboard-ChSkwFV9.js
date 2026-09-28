@@ -1,1 +1,0 @@
-import{d as a,j as s,N as o}from"./index-g1bLkgVH.js";const n=()=>{const{user:r}=a(t=>t.auth),e=String(r?.primaryRoleCode||r?.role||r?.loginUserName||"").toUpperCase();return e==="WSHG"||e==="SHG"?s.jsx(o,{to:"/track-wshg",replace:!0}):s.jsx("div",{children:"Dashboard"})};export{n as default};

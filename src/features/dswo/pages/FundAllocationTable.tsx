@@ -152,12 +152,14 @@ const INITIAL_AWC_DATA: AwcAllocationRow[] = [
 
 interface EditableAllocateAmountCellProps {
   row: MRT_Row<AwcAllocationRow>;
+  isSelected: boolean;
   onAmountChange: (id: string, newAmount: number | '') => void;
   onResetAmount: (id: string) => void;
 }
 
 const EditableAllocateAmountCell: React.FC<EditableAllocateAmountCellProps> = ({
   row,
+  isSelected,
   onAmountChange,
   onResetAmount,
 }) => {
@@ -171,6 +173,7 @@ const EditableAllocateAmountCell: React.FC<EditableAllocateAmountCellProps> = ({
           name={`allocate-amount-${item.id}`}
           type="number"
           min={0}
+          disabled={!isSelected}
           value={item.allocatedAmount === '' ? '' : item.allocatedAmount}
           onChange={(e) => {
             const val = e.target.value;
@@ -179,13 +182,15 @@ const EditableAllocateAmountCell: React.FC<EditableAllocateAmountCellProps> = ({
           placeholder="Autofilled amount"
           wrapperClassName="mb-0"
           className={`text-right font-mono font-semibold text-sm transition-colors ${
-            item.isEdited
+            !isSelected
+              ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-700'
+              : item.isEdited
               ? 'border-amber-400 bg-amber-50/60 text-amber-950 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-600 focus:border-amber-500'
               : 'text-slate-800 dark:text-slate-100'
           }`}
         />
       </div>
-      {item.isEdited && (
+      {item.isEdited && isSelected && (
         <button
           type="button"
           onClick={() => onResetAmount(item.id)}
@@ -221,162 +226,164 @@ const getFundAllocationTableColumns = ({
   onAmountChange,
   onResetAmount,
 }: GetColumnsOptions): MRT_ColumnDef<AwcAllocationRow>[] => [
-  /* 1. Checkbox Column */
-  {
-    id: 'select',
-    header: () => (
-      <div className="flex items-center justify-center">
-        <input
-          type="checkbox"
-          checked={totalRows > 0 && selectedIds.length === totalRows}
-          ref={(el) => {
-            if (el) {
-              el.indeterminate =
-                selectedIds.length > 0 && selectedIds.length < totalRows;
-            }
-          }}
-          onChange={onToggleSelectAll}
-          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
-          title="Select All"
-          aria-label="Select All Rows"
-        />
-      </div>
-    ),
-    size: 50,
-    minSize: 45,
-    enableSorting: false,
-    enableColumnFilter: false,
-    enableColumnActions: false,
-    enableColumnOrdering: false,
-    Cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <input
-          type="checkbox"
-          checked={selectedIds.includes(row.original.id)}
-          onChange={() => onToggleSelectRow(row.original.id)}
-          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
-          aria-label={`Select ${row.original.awcName}`}
-        />
-      </div>
-    ),
-  },
-
-  /* 2. Sl. No. Column */
-  {
-    accessorKey: 'id',
-    header: 'SL N0',
-    size: 70,
-    minSize: 60,
-    Cell: ({ row }) => (
-      <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">
-        {row.index + 1}
-      </span>
-    ),
-  },
-
-  /* 3. Sector Column */
-  {
-    accessorKey: 'sector',
-    header: 'Sector',
-    size: 130,
-    minSize: 110,
-    Cell: ({ cell }) => (
-      <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-slate-700 dark:text-blue-300 border border-blue-200 dark:border-slate-600">
-        {cell.getValue<string>()}
-      </span>
-    ),
-  },
-
-  /* 4. AWC Column */
-  {
-    accessorKey: 'awcName',
-    header: 'AWC',
-    size: 250,
-    minSize: 210,
-    Cell: ({ row }) => (
-      <div>
-        <span className="font-semibold text-slate-900 dark:text-slate-100 block text-sm">
-          {row.original.awcName}
-        </span>
-        <span className="text-[11px] text-slate-400 font-mono">
-          {row.original.awcCode}
-        </span>
-      </div>
-    ),
-  },
-
-  /* 4. Children Count under Boys / Girls (Multi-level Grouped Header) */
-  {
-    id: 'childrenCountGroup',
-    header: 'Children Count',
-    muiTableHeadCellProps: {
-      align: 'center',
-      sx: {
-        textAlign: 'center',
-        '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
-        '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
-      },
+    /* 1. Checkbox Column */
+    {
+      id: 'select',
+      header: 'Select',
+      Header: () => (
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            checked={totalRows > 0 && selectedIds.length === totalRows}
+            ref={(el) => {
+              if (el) {
+                el.indeterminate =
+                  selectedIds.length > 0 && selectedIds.length < totalRows;
+              }
+            }}
+            onChange={onToggleSelectAll}
+            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+            title="Select All"
+            aria-label="Select All Rows"
+          />
+        </div>
+      ),
+      size: 50,
+      minSize: 45,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableColumnActions: false,
+      enableColumnOrdering: false,
+      Cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            checked={selectedIds.includes(row.original.id)}
+            onChange={() => onToggleSelectRow(row.original.id)}
+            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+            aria-label={`Select ${row.original.awcName}`}
+          />
+        </div>
+      ),
     },
-    Header: () => (
-      <div className="w-full text-center font-semibold">Children Count</div>
-    ),
-    columns: [
-      {
-        accessorKey: 'boysCount',
-        header: 'Boys',
-        size: 90,
-        minSize: 80,
-        muiTableHeadCellProps: {
-          align: 'center',
-          sx: {
-            textAlign: 'center',
-            '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
-            '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
-          },
-        },
-        Cell: ({ cell }) => (
-          <span className="font-mono font-medium text-slate-800 dark:text-slate-200 block text-center">
-            {cell.getValue<number>()}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'girlsCount',
-        header: 'Girls',
-        size: 90,
-        minSize: 80,
-        muiTableHeadCellProps: {
-          align: 'center',
-          sx: {
-            textAlign: 'center',
-            '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
-            '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
-          },
-        },
-        Cell: ({ cell }) => (
-          <span className="font-mono font-medium text-slate-800 dark:text-slate-200 block text-center">
-            {cell.getValue<number>()}
-          </span>
-        ),
-      },
-    ],
-  },
 
-  /* 5. Allocate Amount (Autofilled & Editable via common Input component) */
-  {
-    accessorKey: 'allocatedAmount',
-    header: 'Allocate Amount',
-    size: 210,
-    minSize: 180,
-    Cell: ({ row }) => (
-      <EditableAllocateAmountCell
-        row={row}
-        onAmountChange={onAmountChange}
-        onResetAmount={onResetAmount}
-      />
-    ),
-  },
-];
+    /* 2. Sl. No. Column */
+    {
+      accessorKey: 'id',
+      header: 'SL N0',
+      size: 70,
+      minSize: 60,
+      Cell: ({ row }) => (
+        <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">
+          {row.index + 1}
+        </span>
+      ),
+    },
+
+    /* 3. Sector Column */
+    {
+      accessorKey: 'sector',
+      header: 'Sector',
+      size: 130,
+      minSize: 110,
+      Cell: ({ cell }) => (
+        <span className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
+          {cell.getValue<string>()}
+        </span>
+      ),
+    },
+
+    /* 4. AWC Column */
+    {
+      accessorKey: 'awcName',
+      header: 'AWC',
+      size: 250,
+      minSize: 210,
+      Cell: ({ row }) => (
+        <div>
+          <span className="font-semibold text-slate-900 dark:text-slate-100 block text-sm">
+            {row.original.awcName}
+          </span>
+          <span className="text-[11px] text-slate-400 font-mono">
+            {row.original.awcCode}
+          </span>
+        </div>
+      ),
+    },
+
+    /* 4. Children Count under Boys / Girls (Multi-level Grouped Header) */
+    {
+      id: 'childrenCountGroup',
+      header: 'Children Count',
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          textAlign: 'center',
+          '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
+          '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
+        },
+      },
+      Header: () => (
+        <div className="w-full text-center font-semibold">Children Count</div>
+      ),
+      columns: [
+        {
+          accessorKey: 'boysCount',
+          header: 'Boys',
+          size: 90,
+          minSize: 80,
+          muiTableHeadCellProps: {
+            align: 'center',
+            sx: {
+              textAlign: 'center',
+              '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
+              '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
+            },
+          },
+          Cell: ({ cell }) => (
+            <span className="font-mono font-medium text-slate-800 dark:text-slate-200 block text-center">
+              {cell.getValue<number>()}
+            </span>
+          ),
+        },
+        {
+          accessorKey: 'girlsCount',
+          header: 'Girls',
+          size: 90,
+          minSize: 80,
+          muiTableHeadCellProps: {
+            align: 'center',
+            sx: {
+              textAlign: 'center',
+              '& .Mui-TableHeadCell-Content': { justifyContent: 'center' },
+              '& .Mui-TableHeadCell-Content-Labels': { justifyContent: 'center', width: '100%' },
+            },
+          },
+          Cell: ({ cell }) => (
+            <span className="font-mono font-medium text-slate-800 dark:text-slate-200 block text-center">
+              {cell.getValue<number>()}
+            </span>
+          ),
+        },
+      ],
+    },
+
+    /* 5. Allocate Amount (Autofilled & Editable via common Input component) */
+    {
+      accessorKey: 'allocatedAmount',
+      header: 'Allocate Amount',
+      size: 210,
+      minSize: 180,
+      Cell: ({ row }) => (
+        <EditableAllocateAmountCell
+          row={row}
+          isSelected={selectedIds.includes(row.original.id)}
+          onAmountChange={onAmountChange}
+          onResetAmount={onResetAmount}
+        />
+      ),
+    },
+  ];
 
 /* -------------------------------------------------------------
    Main Component: FundAllocationTable
@@ -385,7 +392,7 @@ const getFundAllocationTableColumns = ({
 const FundAllocationTable: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<AwcAllocationRow[]>(INITIAL_AWC_DATA);
-  const [selectedIds, setSelectedIds] = useState<string[]>(['1', '2', '3']);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Toggle single row selection
@@ -424,10 +431,10 @@ const FundAllocationTable: React.FC = () => {
       prev.map((row) =>
         row.id === id
           ? {
-              ...row,
-              allocatedAmount: row.autofilledAmount,
-              isEdited: false,
-            }
+            ...row,
+            allocatedAmount: row.autofilledAmount,
+            isEdited: false,
+          }
           : row
       )
     );

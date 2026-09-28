@@ -3,10 +3,11 @@
 import React from 'react';
 import { DswoFundRequestList } from '../components/DswoFundRequestList';
 
-export const DswoFundRequest: React.FC<{ districtName?: string }> = ({
-  districtName = 'Khordha',
+export const DswoFundRequest: React.FC<{ districtName?: string; district?: string }> = ({
+  districtName,
+  district = districtName || 'Khordha',
 }) => {
-  return <DswoFundRequestList districtName={districtName} />;
+  return <DswoFundRequestList district={district} />;
 };
 
 export default DswoFundRequest;

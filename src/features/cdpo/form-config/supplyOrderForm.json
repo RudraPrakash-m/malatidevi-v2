@@ -43,8 +43,7 @@
       "required": true,
       "options": [
         { "value": "Uniform", "label": "Uniform Pairs (2 sets per child)" },
-        { "value": "Sweater", "label": "Winter Sweaters" },
-        { "value": "Shoes & Socks", "label": "Shoes & Socks" }
+        { "value": "Sweater", "label": "Winter Sweaters" }
       ]
     },
     {

@@ -166,7 +166,7 @@ export const ReadOnlySummaryModal: React.FC<ReadOnlySummaryModalProps> = ({
     item.status === 'pending_blf' ||
     item.status === 'pending_blc';
 
-  const isBlfActionDisabled = currentRole === 'BLF' && item.status === 'pending_blc';
+  const isActionDisabled = currentRole !== 'BLC' && item.status === 'pending_blc';
 
   const modalFooter = (
     <div className="flex justify-end items-center gap-2.5 w-full">
@@ -179,8 +179,8 @@ export const ReadOnlySummaryModal: React.FC<ReadOnlySummaryModalProps> = ({
         onClick={onClose}
       />
 
-      {/* Revert Action Button - not shown for BLF and BLC */}
-      {isPending && currentRole !== 'BLF' && currentRole !== 'BLC' && (
+      {/* Revert Action Button - shown only for State / oversight */}
+      {isPending && currentRole !== 'BLF' && currentRole !== 'BLC' && currentRole !== 'DSWO' && (
         <Button
           type="button"
           variant="warning"
@@ -205,7 +205,7 @@ export const ReadOnlySummaryModal: React.FC<ReadOnlySummaryModalProps> = ({
           label="Reject"
           size="md"
           icon={<XCircle size={15} />}
-          disabled={isBlfActionDisabled}
+          disabled={isActionDisabled}
           onClick={() => {
             if (onReject) {
               onReject(item);
@@ -230,7 +230,7 @@ export const ReadOnlySummaryModal: React.FC<ReadOnlySummaryModalProps> = ({
           }
           size="md"
           icon={currentRole === 'BLC' ? <Check size={16} /> : <Forward size={16} />}
-          disabled={isBlfActionDisabled}
+          disabled={isActionDisabled}
           onClick={() => onForward(item)}
         />
       )}

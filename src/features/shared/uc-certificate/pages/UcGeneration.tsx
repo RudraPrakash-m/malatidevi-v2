@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Users,
   FileCheck,
+  Search,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -444,7 +445,10 @@ export const UcGeneration: React.FC = () => {
         muiTableBodyCellProps: { align: 'center' },
         Cell: ({ cell }) => (
           <div className="flex items-center justify-center">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${cell.getValue<string>() === 'UC Generated'
+              ? 'text-emerald-700 dark:text-emerald-300'
+              : 'text-amber-700 dark:text-amber-300'
+              }`}>
               {cell.getValue<string>()}
             </span>
           </div>
@@ -514,11 +518,10 @@ export const UcGeneration: React.FC = () => {
         muiTableBodyCellProps: { align: 'center' },
         Cell: ({ cell }) => (
           <div className="flex items-center justify-center">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-              cell.getValue<string>() === 'UC Generated'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
-            }`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${cell.getValue<string>() === 'UC Generated'
+              ? 'text-emerald-700 dark:text-emerald-300'
+              : 'text-amber-700 dark:text-amber-300'
+              }`}>
               {cell.getValue<string>()}
             </span>
           </div>
@@ -556,10 +559,14 @@ export const UcGeneration: React.FC = () => {
         title={isDswo || isState ? "Utilization List" : "UC Generation"}
         icon={Award}
         action={
-          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-            <span>UC Generated: <strong className="text-slate-800 dark:text-slate-200">{totalGeneratedCount}</strong></span>
-            <span>|</span>
-            <span>UC Pending: <strong className="text-slate-800 dark:text-slate-200">{totalPendingCount}</strong></span>
+          <div className="flex items-center gap-3 text-xs font-medium">
+            <span className="text-emerald-600 dark:text-emerald-400">
+              UC Generated: <strong className="font-bold text-emerald-700 dark:text-emerald-300">{totalGeneratedCount}</strong>
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-amber-600 dark:text-amber-400">
+              UC Pending: <strong className="font-bold text-amber-700 dark:text-amber-300">{totalPendingCount}</strong>
+            </span>
           </div>
         }
       >
@@ -627,7 +634,6 @@ export const UcGeneration: React.FC = () => {
                 label="Filter"
                 icon={<Filter size={15} />}
                 onClick={handleApplyFilters}
-                className="flex-1"
               />
               {(filterFy !== 'all' ||
                 filterCategory !== 'all' ||
@@ -651,13 +657,14 @@ export const UcGeneration: React.FC = () => {
 
           {/* Quick Search Bar */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="relative w-full max-w-xs">
+            <div className="w-full max-w-xs">
               <Input
                 id="uc-search-input"
                 name="ucSearch"
                 placeholder="Search SHG, Sector..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                icon={<Search size={15} />}
               />
             </div>
 
@@ -688,11 +695,10 @@ export const UcGeneration: React.FC = () => {
           footer={
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                  selectedShgRow.ucStatus === 'UC Generated'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-                    : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
-                }`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${selectedShgRow.ucStatus === 'UC Generated'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
+                  }`}>
                   <span className={`size-1.5 rounded-full ${selectedShgRow.ucStatus === 'UC Generated' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                   {selectedShgRow.ucStatus}
                 </span>

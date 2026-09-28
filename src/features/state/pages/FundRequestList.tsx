@@ -426,22 +426,22 @@ const getFundRequestColumns = (
     },
 
     /* 9. Fund Requested (₹) */
-    {
-      accessorKey: 'requestedAmt',
-      header: 'Fund Requested (₹)',
-      size: 135,
-      minSize: 110,
-      muiTableHeadCellProps: { align: 'right' },
-      muiTableBodyCellProps: { align: 'right' },
-      Cell: ({ row }) => {
-        const amount = row.original.requestedAmt ?? 0;
-        return (
-          <div className="w-full text-right font-mono text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
-            {amount.toLocaleString('en-IN')}
-          </div>
-        );
-      },
-    },
+    // {
+    //   accessorKey: 'requestedAmt',
+    //   header: 'Fund Requested (₹)',
+    //   size: 135,
+    //   minSize: 110,
+    //   muiTableHeadCellProps: { align: 'right' },
+    //   muiTableBodyCellProps: { align: 'right' },
+    //   Cell: ({ row }) => {
+    //     const amount = row.original.requestedAmt ?? 0;
+    //     return (
+    //       <div className="w-full text-right font-mono text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
+    //         {amount.toLocaleString('en-IN')}
+    //       </div>
+    //     );
+    //   },
+    // },
 
     /* 10. Fund Allocated (₹) */
     {
@@ -466,22 +466,22 @@ const getFundRequestColumns = (
     },
 
     /* 11. Status (Plain uppercase text without color or borders) */
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      size: 110,
-      minSize: 95,
-      muiTableHeadCellProps: { align: 'center' },
-      muiTableBodyCellProps: { align: 'center' },
-      Cell: ({ row }) => {
-        const formattedStatus = formatStatusText(row.original.status);
-        return (
-          <div className="w-full text-center font-medium text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-            {formattedStatus}
-          </div>
-        );
-      },
-    },
+    // {
+    //   accessorKey: 'status',
+    //   header: 'Status',
+    //   size: 110,
+    //   minSize: 95,
+    //   muiTableHeadCellProps: { align: 'center' },
+    //   muiTableBodyCellProps: { align: 'center' },
+    //   Cell: ({ row }) => {
+    //     const formattedStatus = formatStatusText(row.original.status);
+    //     return (
+    //       <div className="w-full text-center font-medium text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+    //         {formattedStatus}
+    //       </div>
+    //     );
+    //   },
+    // },
 
     /* 12. Action: View Icon (Eye) */
     {

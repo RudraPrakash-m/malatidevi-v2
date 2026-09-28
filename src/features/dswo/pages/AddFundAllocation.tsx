@@ -186,29 +186,11 @@ export const AddFundAllocation: React.FC = () => {
     setIsAmountManuallyEdited(false);
   };
 
-  // Price pill widget
-  const priceHeaderWidget = (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
-        Rates:
-      </span>
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800/80">
-        <span>Uniform:</span>
-        <span className="font-mono font-bold">₹350</span>
-      </span>
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80">
-        <span>Sweater:</span>
-        <span className="font-mono font-bold">₹250</span>
-      </span>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       <Card
         title={`Fund Request - ${currentDistrict} District`}
         icon={PlusCircle}
-        action={priceHeaderWidget}
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Form Fields Grid */}
@@ -227,68 +209,8 @@ export const AddFundAllocation: React.FC = () => {
               />
             </div>
 
-            {/* 2. District (Pre-filled & fetched upon FY selection) */}
+            {/* 2. Item Category (Just after Financial Year) */}
             <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-              <Input
-                id="request-district"
-                name="district"
-                label="District"
-                value={fetchedData.district}
-                placeholder={financialYear ? currentDistrict : 'Auto-filled on FY select'}
-                disabled
-              />
-            </div>
-
-            {/* 3. Project */}
-            <div className="col-span-12 sm:col-span-4 lg:col-span-2">
-              <Input
-                id="request-project"
-                name="project"
-                label="Project"
-                value={fetchedData.projects}
-                placeholder={financialYear ? fetchedData.projects : 'Auto-filled'}
-                disabled
-              />
-            </div>
-
-            {/* 4. Sector */}
-            <div className="col-span-12 sm:col-span-4 lg:col-span-2">
-              <Input
-                id="request-sector"
-                name="sector"
-                label="Sector"
-                value={fetchedData.sectors}
-                placeholder={financialYear ? fetchedData.sectors : 'Auto-filled'}
-                disabled
-              />
-            </div>
-
-            {/* 5. AWC */}
-            <div className="col-span-12 sm:col-span-4 lg:col-span-2">
-              <Input
-                id="request-awc"
-                name="awc"
-                label="AWC"
-                value={fetchedData.awcCount}
-                placeholder={financialYear ? fetchedData.awcCount : 'Auto-filled'}
-                disabled
-              />
-            </div>
-
-            {/* 6. Total Children */}
-            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-              <Input
-                id="request-total-children"
-                name="totalChildren"
-                label="Total Children"
-                value={fetchedData.totalChildren}
-                placeholder={financialYear ? fetchedData.totalChildren : 'Auto-filled'}
-                disabled
-              />
-            </div>
-
-            {/* 7. Item Category (Select: Uniform, Sweater) */}
-            <div className="col-span-12 sm:col-span-6 lg:col-span-4">
               <Select
                 id="request-item-category"
                 name="itemCategory"
@@ -301,8 +223,68 @@ export const AddFundAllocation: React.FC = () => {
               />
             </div>
 
+            {/* 3. District (Pre-filled & fetched upon FY selection) */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <Input
+                id="request-district"
+                name="district"
+                label="District"
+                value={fetchedData.district}
+                placeholder={financialYear ? currentDistrict : 'Auto-filled on FY select'}
+                disabled
+              />
+            </div>
+
+            {/* 4. Project */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <Input
+                id="request-project"
+                name="project"
+                label="Project"
+                value={fetchedData.projects}
+                placeholder={financialYear ? fetchedData.projects : 'Auto-filled'}
+                disabled
+              />
+            </div>
+
+            {/* 5. Sector */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <Input
+                id="request-sector"
+                name="sector"
+                label="Sector"
+                value={fetchedData.sectors}
+                placeholder={financialYear ? fetchedData.sectors : 'Auto-filled'}
+                disabled
+              />
+            </div>
+
+            {/* 6. AWC */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <Input
+                id="request-awc"
+                name="awc"
+                label="AWC"
+                value={fetchedData.awcCount}
+                placeholder={financialYear ? fetchedData.awcCount : 'Auto-filled'}
+                disabled
+              />
+            </div>
+
+            {/* 7. Total Children */}
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+              <Input
+                id="request-total-children"
+                name="totalChildren"
+                label="Total Children"
+                value={fetchedData.totalChildren}
+                placeholder={financialYear ? fetchedData.totalChildren : 'Auto-filled'}
+                disabled
+              />
+            </div>
+
             {/* 8. Requested Amount (Pre-filled by calculation & editable) */}
-            <div className="col-span-12 sm:col-span-6 lg:col-span-5">
+            <div className="col-span-12 sm:col-span-6 lg:col-span-3">
               <Input
                 id="request-amount"
                 name="amount"
@@ -324,6 +306,12 @@ export const AddFundAllocation: React.FC = () => {
               label="Submit Request"
               size="md"
               icon={<Send size={16} />}
+              disabled={
+                !financialYear ||
+                !itemCategory ||
+                !requestedAmount ||
+                parseFloat(requestedAmount) <= 0
+              }
             />
 
             {(financialYear || itemCategory || requestedAmount) && (

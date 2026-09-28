@@ -16,6 +16,8 @@ import {
   Building,
   Users,
   IndianRupee,
+  BarChart2,
+  FileText,
 } from 'lucide-react';
 import type { MRT_ColumnDef } from 'material-react-table';
 import { toast } from 'react-toastify';
@@ -290,6 +292,17 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
   // Role detection: CDPO role check
   const authUser = useSelector((state: RootState) => state.auth.user);
   const isCdpo = authUser?.primaryRoleCode === 'CDPO' || authUser?.loginUserName === 'cdpo';
+
+  // Category options: CDPO allocates for Uniform & Sweater only (Shoes are allocated directly to AWW)
+  const availableCategoryOptions = useMemo(() => {
+    if (isCdpo) {
+      return [
+        { label: 'Uniform', value: 'Uniform' },
+        { label: 'Sweater', value: 'Sweater' },
+      ];
+    }
+    return ITEM_CATEGORY_OPTIONS;
+  }, [isCdpo]);
 
   // Form states
   const [financialYear, setFinancialYear] = useState<string>('2025-26');
@@ -627,11 +640,10 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
               <button
                 type="button"
                 onClick={() => handleToggleRow(row.original.id)}
-                className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-primary border-primary text-white shadow-xs'
-                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-primary/60'
-                }`}
+                className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${isSelected
+                  ? 'bg-primary border-primary text-white shadow-xs'
+                  : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-primary/60'
+                  }`}
                 title={isSelected ? `Deselect ${row.original.shgName}` : `Select ${row.original.shgName}`}
                 aria-label={`Select ${row.original.shgName}`}
               >
@@ -663,9 +675,8 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
           const isSelected = selectedIds.includes(row.original.id);
           return (
             <span
-              className={`font-semibold text-xs sm:text-sm ${
-                isSelected ? 'text-primary dark:text-primary-light font-bold' : 'text-slate-800 dark:text-slate-200'
-              }`}
+              className={`font-semibold text-xs sm:text-sm ${isSelected ? 'text-primary dark:text-primary-light font-bold' : 'text-slate-800 dark:text-slate-200'
+                }`}
             >
               {row.original.shgName}
             </span>
@@ -765,13 +776,12 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
                 type="button"
                 disabled={!isSelectable}
                 onClick={() => isSelectable && handleToggleRow(row.original.id)}
-                className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                  !isSelectable
-                    ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
-                    : isSelected
+                className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${!isSelectable
+                  ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
+                  : isSelected
                     ? 'bg-primary border-primary text-white shadow-xs cursor-pointer'
                     : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-primary/60 cursor-pointer'
-                }`}
+                  }`}
                 title={!isSelectable ? 'Cannot select (Total Children is 0)' : isSelected ? `Deselect ${row.original.district}` : `Select ${row.original.district}`}
                 aria-label={`Select ${row.original.district}`}
               >
@@ -805,9 +815,8 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
             <button
               type="button"
               onClick={() => handleOpenDistrictModal(row.original)}
-              className={`text-left font-semibold text-xs sm:text-sm transition-all hover:underline hover:text-primary cursor-pointer inline-flex items-center gap-1.5 group ${
-                isSelected ? 'text-primary dark:text-primary-light font-bold' : 'text-slate-800 dark:text-slate-200'
-              }`}
+              className={`text-left font-semibold text-xs sm:text-sm transition-all hover:underline hover:text-primary cursor-pointer inline-flex items-center gap-1.5 group ${isSelected ? 'text-primary dark:text-primary-light font-bold' : 'text-slate-800 dark:text-slate-200'
+                }`}
               title={`Click to view ${row.original.projects} projects in ${row.original.district}`}
             >
               <span className="group-hover:text-primary transition-colors">{cell.getValue<string>()}</span>
@@ -828,9 +837,8 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
             <button
               type="button"
               onClick={() => handleOpenDistrictModal(row.original)}
-              className={`w-full text-right font-mono text-xs sm:text-sm hover:text-primary hover:underline cursor-pointer ${
-                isSelected ? 'text-slate-700 dark:text-slate-300 font-semibold' : 'text-slate-500 dark:text-slate-400'
-              }`}
+              className={`w-full text-right font-mono text-xs sm:text-sm hover:text-primary hover:underline cursor-pointer ${isSelected ? 'text-slate-700 dark:text-slate-300 font-semibold' : 'text-slate-500 dark:text-slate-400'
+                }`}
               title={`Click to view ${cell.getValue<number>()} projects in ${row.original.district}`}
             >
               {cell.getValue<number>()}
@@ -888,13 +896,12 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
           const childrenCount = cell.getValue<number>() ?? 0;
           return (
             <div
-              className={`w-full text-right font-mono text-xs sm:text-sm font-semibold ${
-                childrenCount === 0
-                  ? 'text-red-500 dark:text-red-400'
-                  : isSelected
+              className={`w-full text-right font-mono text-xs sm:text-sm font-semibold ${childrenCount === 0
+                ? 'text-red-500 dark:text-red-400'
+                : isSelected
                   ? 'text-slate-800 dark:text-slate-100'
                   : 'text-slate-400 dark:text-slate-500'
-              }`}
+                }`}
             >
               {childrenCount}
             </div>
@@ -1248,7 +1255,7 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
                 name="itemCategory"
                 label="Item Category"
                 placeholder="Select Category"
-                options={ITEM_CATEGORY_OPTIONS}
+                options={availableCategoryOptions}
                 value={itemCategory}
                 onChange={(e) => {
                   setItemCategory(e.target.value);
@@ -1287,143 +1294,81 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
           <div className="mt-4 space-y-3">
             {/* Fund Allocation Summary Section - ONLY FOR NON-CDPO (Hidden for CDPO) */}
             {!isCdpo && (
-              <div className="p-2.5 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-slate-900/80 rounded-xl border border-slate-200/90 dark:border-slate-700/80 shadow-2xs space-y-1">
-                <div className="flex items-center justify-between flex-wrap gap-3 pb-3">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-bold text-sm text-slate-800 dark:text-slate-100">
+              <div className="p-3 sm:p-3.5 bg-white dark:bg-gray-900 rounded-xl border border-slate-200/80 dark:border-gray-800 shadow-2xs space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <BarChart2 className="text-blue-600 dark:text-blue-400" size={17} />
+                    <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">
                       Fund Allocation Summary
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100/70 text-blue-600 dark:bg-blue-950/70 dark:text-blue-400">
                       {selectedIds.length} of {DISTRICT_DATA.length} Districts Selected
                     </span>
-                    <button
-                      type="button"
-                      onClick={handleToggleSelectAll}
-                      className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                        selectableIds.length > 0 && selectableIds.every((id) => selectedIds.includes(id))
-                          ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900'
-                          : 'bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40'
-                      }`}
-                    >
-                      {selectableIds.length > 0 && selectableIds.every((id) => selectedIds.includes(id)) ? (
-                        <>
-                          <Minus size={13} strokeWidth={2.5} />
-                          <span>Deselect All</span>
-                        </>
-                      ) : (
-                        <>
-                          <Check size={13} strokeWidth={2.5} />
-                          <span>Select All</span>
-                        </>
-                      )}
-                    </button>
                   </div>
-
-                  {totalAmount && (
-                    <div className="flex items-center gap-2.5 text-xs flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium">Budget Amount:</span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ₹{parseFloat(totalAmount.replace(/,/g, '') || '0').toLocaleString('en-IN')}
-                        </span>
-                      </div>
-
-                      <span className="text-slate-300 dark:text-slate-600">|</span>
-
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium">Allocated Amount:</span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ₹{totalSelectedAmount.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-
-                      {(() => {
-                        const budgetNum = parseFloat(totalAmount.replace(/,/g, '') || '0');
-                        if (budgetNum <= 0) return null;
-                        const diff = budgetNum - totalSelectedAmount;
-
-                        if (diff === 0) {
-                          return (
-                            <span className="px-2 py-0.5 rounded-md font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-[11px]">
-                              Exact Match (100%)
-                            </span>
-                          );
-                        } else if (diff > 0) {
-                          const remainingPercent = ((diff / budgetNum) * 100).toFixed(1).replace(/\.0$/, '');
-                          return (
-                            <span className="px-2 py-0.5 rounded-md font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-300 dark:border-blue-800 text-[11px]">
-                              Remaining: ₹{diff.toLocaleString('en-IN')} ({remainingPercent}%)
-                            </span>
-                          );
-                        } else {
-                          const exceedPercent = ((Math.abs(diff) / budgetNum) * 100).toFixed(1).replace(/\.0$/, '');
-                          return (
-                            <span className="px-2 py-0.5 rounded-md font-semibold bg-red-100 text-red-800 dark:bg-red-950/70 dark:text-red-300 border border-red-300 dark:border-red-800 text-[11px]">
-                              Exceeds by: ₹{Math.abs(diff).toLocaleString('en-IN')} (+{exceedPercent}%)
-                            </span>
-                          );
-                        }
-                      })()}
-                    </div>
-                  )}
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-700/80 shadow-2xs transition-all hover:scale-[1.02]">
-                    <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                      <Building2 size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                  {/* 1. Total Projects */}
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-gray-800/90 border border-slate-200/70 dark:border-gray-700/60 border-l-[3px] border-l-blue-500 shadow-2xs transition-all hover:scale-[1.01]">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <FileText size={16} />
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Projects</p>
-                      <p className="font-mono text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                      <p className="font-mono text-base font-bold text-blue-600 dark:text-blue-400 leading-tight">
                         {totalSelectedProjects.toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-700/80 shadow-2xs transition-all hover:scale-[1.02]">
-                    <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                  {/* 2. Total Sectors */}
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-gray-800/90 border border-slate-200/70 dark:border-gray-700/60 border-l-[3px] border-l-indigo-600 shadow-2xs transition-all hover:scale-[1.01]">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                       <MapPin size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Sectors</p>
-                      <p className="font-mono text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                      <p className="font-mono text-base font-bold text-indigo-700 dark:text-indigo-400 leading-tight">
                         {totalSelectedSectors.toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-700/80 shadow-2xs transition-all hover:scale-[1.02]">
-                    <span className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                      <Building size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
+                  {/* 3. Total AWCs */}
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-gray-800/90 border border-slate-200/70 dark:border-gray-700/60 border-l-[3px] border-l-pink-500 shadow-2xs transition-all hover:scale-[1.01]">
+                    <div className="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-950/70 text-pink-500 dark:text-pink-400 flex items-center justify-center shrink-0">
+                      <Building2 size={16} />
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total AWCs</p>
-                      <p className="font-mono text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                      <p className="font-mono text-base font-bold text-pink-600 dark:text-pink-400 leading-tight">
                         {totalSelectedAwc.toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-700/80 shadow-2xs transition-all hover:scale-[1.02]">
-                    <span className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  {/* 4. Total Children */}
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-gray-800/90 border border-slate-200/70 dark:border-gray-700/60 border-l-[3px] border-l-amber-500 shadow-2xs transition-all hover:scale-[1.01]">
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/70 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
                       <Users size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Children</p>
-                      <p className="font-mono text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
-                        {totalSelectedChildren}
+                      <p className="font-mono text-base font-bold text-amber-600 dark:text-amber-400 leading-tight">
+                        {totalSelectedChildren.toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-slate-200/80 dark:border-gray-700/80 shadow-2xs transition-all hover:scale-[1.02]">
-                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+
+                  {/* 5. Total Amount */}
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white dark:bg-gray-800/90 border border-slate-200/70 dark:border-gray-700/60 border-l-[3px] border-l-emerald-500 shadow-2xs transition-all hover:scale-[1.01]">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                       <IndianRupee size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
+                    </div>
+                    <div className="min-w-0">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Amount</p>
-                      <p className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400 truncate">
+                      <p className="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400 leading-tight">
                         ₹{totalSelectedAmount.toLocaleString('en-IN')}
                       </p>
                     </div>
@@ -1455,14 +1400,6 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
 
             {/* Action Buttons below the Table */}
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              <Button
-                type="submit"
-                variant="primary"
-                label="Allocate"
-                size="md"
-                icon={<CheckCircle2 size={16} />}
-              />
-
               {(financialYear || itemCategory || totalAmount || selectedIds.length > 0) && (
                 <Button
                   type="button"
@@ -1473,6 +1410,16 @@ const FundAllocationField: React.FC<FundAllocationFieldProps> = ({
                   onClick={handleResetFilter}
                 />
               )}
+
+              <Button
+                type="submit"
+                disabled={totalSelectedAmount === 0 || selectedIds.length === 0}
+                variant="primary"
+                label="Allocate"
+                size="md"
+                icon={<CheckCircle2 size={16} />}
+              />
+
             </div>
           </div>
         </form>

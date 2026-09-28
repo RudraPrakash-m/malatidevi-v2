@@ -245,9 +245,9 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
               <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600">
                 ID: #{selectedItem.id}
               </span>
-              <span className="text-[11px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200">
+              {/* <span className="text-[11px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200">
                 {formattedStatus}
-              </span>
+              </span> */}
             </div>
             <h3 className="text-sm md:text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <MapPin size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
@@ -258,7 +258,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
             </h3>
           </div>
 
-          <div className="text-right">
+          {/* <div className="text-right">
             <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
               {isFullyPaid
                 ? 'Total Allocated'
@@ -269,7 +269,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
             <span className="text-base md:text-lg font-bold text-slate-900 dark:text-white font-mono">
               ₹{(isFullyPaid ? alreadyAllocated : requestedAmt).toLocaleString('en-IN')}
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* 3x4 Grid of Details */}
@@ -363,7 +363,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
           </div>
 
           {/* 9. Fund Requested */}
-          <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          {/* <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-0.5">
               <IndianRupee size={12} className="text-blue-500" />
               <span>Fund Requested</span>
@@ -371,7 +371,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
             <p className="text-xs font-bold text-slate-900 dark:text-white font-mono">
               ₹{requestedAmt.toLocaleString('en-IN')}
             </p>
-          </div>
+          </div> */}
 
           {/* 10. Fund Allocated Amount */}
           <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -385,7 +385,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
           </div>
 
           {/* 11. Status (Plain uppercase text) */}
-          <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          {/* <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-0.5">
               <FileText size={12} className="text-blue-500" />
               <span>Status</span>
@@ -393,7 +393,7 @@ export const FundRequestDetailsModal: React.FC<FundRequestDetailsModalProps> = (
             <p className="text-xs font-bold uppercase tracking-wide text-slate-900 dark:text-white font-mono">
               {formattedStatus}
             </p>
-          </div>
+          </div> */}
 
           {/* 12. Requested By */}
           <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 col-span-1 sm:col-span-2 md:col-span-3">

@@ -1,4 +1,4 @@
-// src/features/dswo/components/DswoFundRequestList.tsx
+// src/features/dswo/components/DswoRequisitionListTable.tsx
 
 import React, { useMemo, useState } from 'react';
 import type { MRT_ColumnDef } from 'material-react-table';
@@ -13,7 +13,7 @@ import Card from '@/shared/components/layout/Card';
 import Select from '@/shared/components/ui/Forms/Select';
 import { ReusableTable } from '@/shared/components/ui/Table';
 import Button from '@/shared/components/ui/Button';
-import { DswoFundRequestDetailsModal } from './DswoFundRequestDetailsModal';
+import { RequisitionListDetailsModal } from './RequisitionListDetailsModal';
 import {
   type FundRequestItem,
   formatStatusText,
@@ -21,7 +21,7 @@ import {
 } from '@/features/state/pages/FundRequestList';
 
 /* ---------------------------------------------
-   Filter Options for DSWO
+   Filter Options for DSWO Requisition List
 --------------------------------------------- */
 const FY_FILTER_OPTIONS = [
   { label: 'All Financial Years', value: 'all' },
@@ -32,18 +32,24 @@ const FY_FILTER_OPTIONS = [
   { label: '2023-24', value: '2023-24' },
 ];
 
+export const formatRequisitionStatus = (status?: string): 'Pending' | 'Paid' => {
+  const upper = String(status || '').toUpperCase();
+  if (upper.includes('PAID') || upper === 'APPROVED') {
+    return 'Paid';
+  }
+  return 'Pending';
+};
+
 const STATUS_FILTER_OPTIONS = [
   { label: 'All Statuses', value: 'all' },
-  { label: 'PENDING', value: 'PENDING' },
-  { label: 'PARTIALLY PAID', value: 'PARTIALLY PAID' },
-  { label: 'FULLY PAID', value: 'FULLY PAID' },
-  { label: 'REJECTED', value: 'REJECTED' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Paid', value: 'Paid' },
 ];
 
 /* ---------------------------------------------
-   Columns for DSWO Requested Fund List
+   Columns for DSWO Requisition List
 --------------------------------------------- */
-const getDswoFundRequestColumns = (
+const getRequisitionListColumns = (
   handleOpenDetails: (item: FundRequestItem) => void
 ): MRT_ColumnDef<FundRequestItem>[] => [
     /* 1. Sl. No */
@@ -175,25 +181,7 @@ const getDswoFundRequestColumns = (
       ),
     },
 
-    /* 9. Fund Requested (₹) */
-    {
-      accessorKey: 'requestedAmt',
-      header: 'Fund Requested (₹)',
-      size: 135,
-      minSize: 110,
-      muiTableHeadCellProps: { align: 'right' },
-      muiTableBodyCellProps: { align: 'right' },
-      Cell: ({ row }) => {
-        const amount = row.original.requestedAmt ?? 0;
-        return (
-          <div className="w-full text-right font-mono text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
-            {amount.toLocaleString('en-IN')}
-          </div>
-        );
-      },
-    },
-
-    /* 10. Fund Allocated (₹) */
+    /* 9. Fund Allocated (₹) */
     {
       accessorKey: 'fundAllocated',
       header: 'Fund Allocated (₹)',
@@ -215,7 +203,7 @@ const getDswoFundRequestColumns = (
       },
     },
 
-    /* 11. Status (Plain uppercase text without color or borders) */
+    /* 11. Status (Only Pending or Paid) */
     {
       accessorKey: 'status',
       header: 'Status',
@@ -224,7 +212,7 @@ const getDswoFundRequestColumns = (
       muiTableHeadCellProps: { align: 'center' },
       muiTableBodyCellProps: { align: 'center' },
       Cell: ({ row }) => {
-        const formattedStatus = formatStatusText(row.original.status);
+        const formattedStatus = formatRequisitionStatus(row.original.status);
         return (
           <div className="w-full text-center font-medium text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wide">
             {formattedStatus}
@@ -252,8 +240,8 @@ const getDswoFundRequestColumns = (
               type="button"
               onClick={() => handleOpenDetails(row.original)}
               className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 transition-colors cursor-pointer border border-blue-200 shadow-2xs"
-              title="View Fund Request Details"
-              aria-label="View Fund Request Details"
+              title="View Requisition Details"
+              aria-label="View Requisition Details"
             >
               <Eye size={14} />
             </button>
@@ -264,16 +252,16 @@ const getDswoFundRequestColumns = (
   ];
 
 /* ---------------------------------------------
-   Main DSWO Component
+   Main DSWO Requisition List Table Component
 --------------------------------------------- */
-export interface DswoFundRequestListProps {
+export interface DswoRequisitionListTableProps {
   district?: string;
   districtName?: string;
   data?: FundRequestItem[];
   setData?: React.Dispatch<React.SetStateAction<FundRequestItem[]>>;
 }
 
-export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
+export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> = ({
   district,
   districtName,
   data: propData,
@@ -343,8 +331,8 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
 
       // Status Filter
       if (appliedFilters.status !== 'all') {
-        const itemStatus = formatStatusText(item.status);
-        if (itemStatus !== appliedFilters.status) {
+        const itemStatus = formatRequisitionStatus(item.status);
+        if (itemStatus.toLowerCase() !== appliedFilters.status.toLowerCase()) {
           return false;
         }
       }
@@ -361,14 +349,14 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
 
   // Columns definition
   const columns = useMemo(
-    () => getDswoFundRequestColumns(handleOpenDetails),
+    () => getRequisitionListColumns(handleOpenDetails),
     []
   );
 
   return (
     <>
       <Card
-        title="Requested Fund List"
+        title="Requisition List"
         icon={HandCoins}
         action={
           <div className="flex items-center gap-2">
@@ -383,7 +371,7 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
           <div className="grid grid-cols-12 gap-4 items-end pb-3 border-b border-slate-200 dark:border-slate-800">
             <div className="col-span-12 sm:col-span-6 lg:col-span-3">
               <Select
-                id="dswo-fund-request-filter-fy"
+                id="requisition-filter-fy"
                 name="financialYear"
                 label="Financial Year"
                 options={FY_FILTER_OPTIONS}
@@ -395,7 +383,7 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
 
             <div className="col-span-12 sm:col-span-6 lg:col-span-3">
               <Select
-                id="dswo-fund-request-filter-status"
+                id="requisition-filter-status"
                 name="status"
                 label="Status"
                 options={STATUS_FILTER_OPTIONS}
@@ -433,13 +421,13 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
             data={filteredData}
             enableRowActions={false}
             enableExport={true}
-            exportFileName={`${activeDistrict.toLowerCase()}_fund_requests`}
+            exportFileName={`${activeDistrict.toLowerCase()}_requisition_records`}
           />
         </div>
       </Card>
 
-      {/* DSWO Details Modal */}
-      <DswoFundRequestDetailsModal
+      {/* Details Modal */}
+      <RequisitionListDetailsModal
         isOpen={isModalOpen}
         onClose={handleCloseDetails}
         selectedItem={selectedItem}
@@ -448,4 +436,4 @@ export const DswoFundRequestList: React.FC<DswoFundRequestListProps> = ({
   );
 };
 
-export default DswoFundRequestList;
+export default DswoRequisitionListTable;

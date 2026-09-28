@@ -1,6 +1,6 @@
 // src/features/check/types/check.types.ts
 
-export type CheckRole = 'BLF' | 'BLC' | 'DSWO';
+export type CheckRole = 'BLF' | 'BLC' | 'DSWO' | 'STATE' | 'CDPO' | 'AWW' | 'WSHG' | 'GUEST';
 
 export type CheckStatus =
   | 'pending_blf'

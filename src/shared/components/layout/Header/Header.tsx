@@ -216,7 +216,7 @@ export const Header: React.FC = () => {
               src={IMAGES.ODISHA_LOGO}
               alt="Government of Odisha Emblem"
               className="h-13 w-13 object-contain  rounded-full"
-             
+
             />
 
             <div className="flex flex-col justify-center min-w-0">
@@ -268,9 +268,8 @@ export const Header: React.FC = () => {
                       setCurrentLang(lang);
                       setIsLanguageOpen(false);
                     }}
-                    className={`w-full text-start px-3 py-1.5 text-xs flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 ${
-                      currentLang === lang ? "font-bold text-black" : "text-black"
-                    }`}
+                    className={`w-full text-start px-3 py-1.5 text-xs flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 ${currentLang === lang ? "font-bold text-black" : "text-black"
+                      }`}
                   >
                     <span>{lang}</span>
                     {currentLang === lang && <span className="size-1.5 rounded-full bg-primary" />}
@@ -403,7 +402,7 @@ export const Header: React.FC = () => {
                 {/* ========================================================================= */}
                 {/* TEMPORARY ROLE SWITCHER (Comment out / remove this block for production)   */}
                 {/* ========================================================================= */}
-                <div className="border-t border-slate-100 dark:border-gray-800 pt-2 pb-1">
+                {/* <div className="border-t border-slate-100 dark:border-gray-800 pt-2 pb-1">
                   <div className="px-4 py-1.5">
                     <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
                       SWITCH ROLE
@@ -450,7 +449,7 @@ export const Header: React.FC = () => {
                       );
                     })}
                   </div>
-                </div>
+                </div> */}
                 {/* ========================================================================= */}
                 {/* END TEMPORARY ROLE SWITCHER                                              */}
                 {/* ========================================================================= */}

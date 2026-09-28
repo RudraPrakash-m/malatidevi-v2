@@ -222,6 +222,11 @@ export const Sidebar: React.FC = () => {
                 path: "/fund-allocation",
               },
               {
+                icon: ClipboardList,
+                label: "Requisition List",
+                path: "/requisition-list",
+              },
+              {
                 icon: WalletCards,
                 label: "Fund Allocation ",
                 path: "/fund-allocationn",

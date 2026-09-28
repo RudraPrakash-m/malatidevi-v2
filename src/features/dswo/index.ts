@@ -11,6 +11,8 @@ export * from './components/DswoActionModals';
 export * from './components/DswoFilterBar';
 export * from './components/DswoFundRequestList';
 export * from './components/DswoFundRequestDetailsModal';
+export * from './components/DswoRequisitionListTable';
+export * from './components/RequisitionListDetailsModal';
 
 export { default as DswoDashboard } from './pages/DswoDashboard';
 export * from './pages/DswoDashboard';
@@ -23,6 +25,9 @@ export * from './pages/DswoFundRequest';
 
 export { default as AddFundAllocation } from './pages/AddFundAllocation';
 export * from './pages/AddFundAllocation';
+
+export { default as RequisitionList } from './pages/RequisitionList';
+export * from './pages/RequisitionList';
 
 export { default as FundAllocationn } from './pages/FundAllocationn';
 export * from './pages/FundAllocationn';

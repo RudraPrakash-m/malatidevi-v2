@@ -19,10 +19,10 @@ const WshgRegistrationStatusBadge: React.FC<{ status?: string }> = ({ status }) 
   const isActive = status?.toLowerCase() === 'active';
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+      className={`text-xs font-semibold ${
         isActive
-          ? 'bg-green-100 text-green-700'
-          : 'bg-gray-100 text-gray-600'
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : 'text-rose-600 dark:text-rose-400'
       }`}
     >
       {status?.toUpperCase() || 'N/A'}

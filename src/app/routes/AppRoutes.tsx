@@ -38,6 +38,7 @@ const DswoVerificationList = lazy(() => import("@/features/dswo/pages/DswoVerifi
 const DswoFundRequest = lazy(() => import("@/features/dswo/pages/DswoFundRequest"));
 const DswoCheckPage = lazy(() => import("@/features/check/pages/DswoCheckPage"));
 const AddFundAllocation = lazy(() => import("@/features/dswo/pages/AddFundAllocation"));
+const RequisitionList = lazy(() => import("@/features/dswo/pages/RequisitionList"));
 const FundAllocationn = lazy(() => import("@/features/dswo/pages/FundAllocationn"));
 const FundAllocationList = lazy(() => import("@/features/dswo/pages/FundAllocationList"));
 const FundAllocationTable = lazy(() => import("@/features/dswo/pages/FundAllocationTable"));
@@ -101,10 +102,15 @@ const AppRoutes = () => {
           </Route>
         </Route>
 
+        {/* Public Routes (Citizen & SHG Self-Service) */}
+        <Route element={<MainLayout />}>
+          <Route path={routes.wshgRegistration.path} element={<WshgRegistration />} />
+          <Route path={routes.wshgTracking.path} element={<WshgTrackingPage />} />
+        </Route>
+
+        {/* Protected Portal Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
-            <Route path={routes.wshgRegistration.path} element={<WshgRegistration />} />
-            <Route path={routes.wshgTracking.path} element={<WshgTrackingPage />} />
             <Route path={routes.dashboard.path} element={<Dashboard />} />
 
             {/* WSHG Workflow & Verification Routes */}
@@ -130,6 +136,7 @@ const AppRoutes = () => {
             <Route path={routes.fundAllocation.path} element={<AddFundAllocation />} />
             <Route path={routes.fundAllocationn.path} element={<FundAllocationn />} />
             <Route path={routes.fundRequest.path} element={<AddFundAllocation />} />
+            <Route path={routes.requisitionList.path} element={<RequisitionList />} />
             <Route path={routes.fundAllocationList.path} element={<FundAllocationList />} />
             <Route path={routes.fundAllocationTable.path} element={<FundAllocationTable />} />
 
