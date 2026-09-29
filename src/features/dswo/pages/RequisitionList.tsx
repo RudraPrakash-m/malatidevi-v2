@@ -11,12 +11,22 @@ import Card from '@/shared/components/layout/Card';
 import Button from '@/shared/components/ui/Button';
 import Select from '@/shared/components/ui/Forms/Select';
 import Input from '@/shared/components/ui/Forms/Input';
+import DatePicker from '@/shared/components/ui/Forms/DatePicker';
+import Modal from '@/shared/components/ui/Modal';
 import { ReusableTable } from '@/shared/components/ui/Table';
 import { DswoRequisitionListTable } from '../components/DswoRequisitionListTable';
 import {
-  getDistrictInitialData,
   type FundRequestItem,
 } from '@/features/state/pages/FundRequestList';
+import {
+  getDistrictAwcList,
+  getRequisitionInitialData,
+  type RequisitionAwcRow,
+  type RequisitionProjectRow,
+} from '../services/requisitionData';
+
+export type { RequisitionAwcRow, RequisitionProjectRow };
+export { getDistrictAwcList, getRequisitionInitialData };
 
 /* -------------------------------------------------------------
    Constants & Options
@@ -31,64 +41,12 @@ const FINANCIAL_YEAR_OPTIONS = [
 const ITEM_CATEGORY_OPTIONS = [
   { label: 'Uniform', value: 'Uniform' },
   { label: 'Sweater', value: 'Sweater' },
+  { label: 'Shoes & Socks', value: 'Shoes & Socks' },
 ];
 
 const ITEM_PRICES: Record<string, number> = {
   Uniform: 350,
   Sweater: 250,
-};
-
-/* -------------------------------------------------------------
-   Project, Sector & AWC Row for Logged-in DSWO District
-------------------------------------------------------------- */
-
-export interface RequisitionAwcRow {
-  id: string;
-  project: string;
-  sector: string;
-  awcName: string;
-  awcCode: string;
-  totalChildren: number;
-}
-
-const getDistrictAwcList = (district: string, fy: string): RequisitionAwcRow[] => {
-  const codePrefix = district.slice(0, 3).toUpperCase();
-  let multiplier = 1.0;
-  if (fy === '2026-27') multiplier = 1.026;
-  if (fy === '2027-28') multiplier = 1.059;
-
-  const baseItems = [
-    { project: `Project 01 (${district} Urban)`, sector: 'Sector 01', awcName: `AWW Center 01 - Main Ward, ${district}`, code: `AWC-${codePrefix}-001`, children: 50 },
-    { project: `Project 01 (${district} Urban)`, sector: 'Sector 01', awcName: `AWW Center 02 - North Colony, ${district}`, code: `AWC-${codePrefix}-002`, children: 40 },
-    { project: `Project 01 (${district} Urban)`, sector: 'Sector 02', awcName: `AWW Center 03 - Market Chowk, ${district}`, code: `AWC-${codePrefix}-003`, children: 65 },
-    { project: `Project 01 (${district} Urban)`, sector: 'Sector 02', awcName: `AWW Center 04 - Station Road, ${district}`, code: `AWC-${codePrefix}-004`, children: 55 },
-    { project: `Project 02 (${district} Rural)`, sector: 'Sector 03', awcName: `AWW Center 05 - Gram Panchayat West, ${district}`, code: `AWC-${codePrefix}-005`, children: 35 },
-    { project: `Project 02 (${district} Rural)`, sector: 'Sector 03', awcName: `AWW Center 06 - Hill Top Village, ${district}`, code: `AWC-${codePrefix}-006`, children: 45 },
-    { project: `Project 02 (${district} Rural)`, sector: 'Sector 04', awcName: `AWW Center 07 - Riverside Basti, ${district}`, code: `AWC-${codePrefix}-007`, children: 58 },
-    { project: `Project 02 (${district} Rural)`, sector: 'Sector 04', awcName: `AWW Center 08 - Industrial Belt, ${district}`, code: `AWC-${codePrefix}-008`, children: 50 },
-    { project: `Project 03 (${district} Sadar)`, sector: 'Sector 05', awcName: `AWW Center 09 - Model Anganwadi, ${district}`, code: `AWC-${codePrefix}-009`, children: 62 },
-    { project: `Project 03 (${district} Sadar)`, sector: 'Sector 05', awcName: `AWW Center 10 - Central Ward, ${district}`, code: `AWC-${codePrefix}-010`, children: 48 },
-  ];
-
-  return baseItems.map((item, idx) => ({
-    id: String(idx + 1),
-    project: item.project,
-    sector: item.sector,
-    awcName: item.awcName,
-    awcCode: item.code,
-    totalChildren: Math.round(item.children * multiplier),
-  }));
-};
-
-export const getRequisitionInitialData = (district: string): FundRequestItem[] => {
-  const base = getDistrictInitialData(district);
-  return base.map((item) => ({
-    ...item,
-    status:
-      item.status === 'FULLY PAID' || item.status === 'PARTIALLY PAID' || item.status === 'PAID'
-        ? 'PAID'
-        : 'PENDING',
-  }));
 };
 
 export const RequisitionList: React.FC = () => {
@@ -100,6 +58,17 @@ export const RequisitionList: React.FC = () => {
   const [financialYear, setFinancialYear] = useState<string>('');
   const [itemCategory, setItemCategory] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [modalProject, setModalProject] = useState<RequisitionProjectRow | null>(null);
+  const isAwcModalOpen = Boolean(modalProject);
+
+  // Today's date formatted as YYYY-MM-DD for DatePicker
+  const todayIsoDate = useMemo(() => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${year}-${month}-${day}`;
+  }, []);
 
   // Requisition history / allocated data
   const [allocatedData, setAllocatedData] = useState<FundRequestItem[]>(() =>
@@ -111,34 +80,135 @@ export const RequisitionList: React.FC = () => {
     setAllocatedData(getRequisitionInitialData(currentDistrict));
   }, [currentDistrict]);
 
-  // Generate AWC List specifically for the logged-in DSWO's district
-  const awcData = useMemo(() => {
+  // Generate Project-wise summary rows for the logged-in DSWO's district
+  const projectSummaryData = useMemo<RequisitionProjectRow[]>(() => {
     if (!financialYear || !itemCategory) return [];
-    return getDistrictAwcList(currentDistrict, financialYear);
+    const list = getDistrictAwcList(currentDistrict, financialYear);
+
+    const map = new Map<string, RequisitionAwcRow[]>();
+    list.forEach((item) => {
+      if (!map.has(item.project)) {
+        map.set(item.project, []);
+      }
+      map.get(item.project)!.push(item);
+    });
+
+    return Array.from(map.entries()).map(([projectName, awcs], idx) => {
+      const sectorCount = new Set(awcs.map((a) => a.sector)).size;
+      const awcCount = awcs.length;
+      const totalChildren = awcs.reduce((sum, a) => sum + a.totalChildren, 0);
+
+      return {
+        id: String(idx + 1),
+        project: projectName,
+        projectName,
+        sectorCount,
+        awcCount,
+        totalChildren,
+        awcs,
+      };
+    });
   }, [currentDistrict, financialYear, itemCategory]);
+
+  // AWCs to display in the modal for the clicked project
+  const modalAwcList = useMemo(() => {
+    return modalProject ? modalProject.awcs : [];
+  }, [modalProject]);
+
+  // Modal Table Columns for AWC Centers breakdown
+  const awcModalColumns = useMemo<MRT_ColumnDef<RequisitionAwcRow>[]>(
+    () => [
+      {
+        accessorKey: 'id',
+        header: 'Sl. No',
+        size: 70,
+        minSize: 60,
+        muiTableHeadCellProps: { align: 'center' },
+        muiTableBodyCellProps: { align: 'center' },
+        Cell: ({ row }) => (
+          <div className="w-full text-center font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {row.index + 1}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'project',
+        header: 'Project',
+        size: 160,
+        minSize: 130,
+        Cell: ({ cell }) => (
+          <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+            {cell.getValue<string>()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'sector',
+        header: 'Sector',
+        size: 120,
+        minSize: 100,
+        Cell: ({ cell }) => (
+          <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+            {cell.getValue<string>()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'awcName',
+        header: 'Anganwadi Center (AWC)',
+        size: 240,
+        minSize: 200,
+        Cell: ({ row }) => (
+          <div>
+            <span className="font-semibold text-slate-900 dark:text-slate-100 block text-xs sm:text-sm">
+              {row.original.awcName}
+            </span>
+            <span className="text-[11px] text-slate-400 font-mono">
+              {row.original.awcCode}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'totalChildren',
+        header: 'Total Children',
+        size: 130,
+        minSize: 100,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
+        Cell: ({ cell }) => (
+          <div className="w-full text-right font-mono text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+            {(cell.getValue<number>() ?? 0).toLocaleString('en-IN')}
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
   // Default to unselected upon FY and Category change
   useEffect(() => {
     setSelectedIds([]);
   }, [financialYear, itemCategory]);
 
-  // Dynamically compute totals from selected AWC rows
+  // Selected project rows & dynamically computed totals
   const selectedRows = useMemo(() => {
-    return awcData.filter((row) => selectedIds.includes(row.id));
-  }, [awcData, selectedIds]);
+    return projectSummaryData.filter((row) => selectedIds.includes(row.id));
+  }, [projectSummaryData, selectedIds]);
 
-  const selectedProjectsCount = useMemo(() => {
-    return new Set(selectedRows.map((r) => r.project)).size;
-  }, [selectedRows]);
+  const selectedProjectsCount = selectedRows.length;
 
   const selectedSectorsCount = useMemo(() => {
-    return new Set(selectedRows.map((r) => r.sector)).size;
+    const allSectors = selectedRows.flatMap((r) => r.awcs.map((a) => a.sector));
+    return new Set(allSectors).size;
   }, [selectedRows]);
 
-  const selectedAwcCount = selectedRows.length;
+  const selectedAwcCount = useMemo(() => {
+    return selectedRows.reduce((sum, r) => sum + r.awcCount, 0);
+  }, [selectedRows]);
 
   const selectedTotalChildren = useMemo(() => {
-    return selectedRows.reduce((sum, row) => sum + row.totalChildren, 0);
+    return selectedRows.reduce((sum, r) => sum + r.totalChildren, 0);
   }, [selectedRows]);
 
   // Handle Financial Year Change
@@ -153,12 +223,12 @@ export const RequisitionList: React.FC = () => {
 
   // Checkbox handlers
   const handleToggleSelectAll = useCallback(() => {
-    if (selectedIds.length === awcData.length) {
+    if (selectedIds.length === projectSummaryData.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(awcData.map((r) => r.id));
+      setSelectedIds(projectSummaryData.map((r) => r.id));
     }
-  }, [selectedIds, awcData]);
+  }, [selectedIds, projectSummaryData]);
 
   const handleToggleRow = useCallback((id: string) => {
     setSelectedIds((prev) =>
@@ -189,34 +259,36 @@ export const RequisitionList: React.FC = () => {
     }
 
     if (selectedIds.length === 0) {
-      toast.warning('Please select at least one AWC row from the table.');
+      toast.warning('Please select at least one Project row from the table.');
       return;
     }
 
     const unitPrice = ITEM_PRICES[itemCategory] || 0;
-    const numAmount = unitPrice * selectedTotalChildren;
 
-    const newRequest: FundRequestItem = {
-      id: String(Date.now()).slice(-4),
-      financialYear,
-      district: currentDistrict,
-      project: selectedProjectsCount.toString(),
-      sectors: selectedSectorsCount,
-      awcCount: selectedAwcCount,
-      totalChildren: selectedTotalChildren,
-      itemCategory: itemCategory,
-      requestedAmt: numAmount,
-      allocateAmount: 0,
-      fundAllocated: 0,
-      status: 'PENDING',
-      applicationDate: new Date().toLocaleDateString('en-GB'),
-      requestedBy: `DSWO ${currentDistrict}`,
-      purpose: `Requisition demand for ${itemCategory} for ${selectedTotalChildren.toLocaleString('en-IN')} preschool children across ${selectedAwcCount} AWCs in ${currentDistrict} district [FY ${financialYear}]`,
-    };
+    const newRequests: FundRequestItem[] = selectedRows.map((r, idx) => {
+      const numAmount = unitPrice * r.totalChildren;
+      return {
+        id: `REQ-${String(Date.now() + idx).slice(-4)}`,
+        financialYear,
+        district: currentDistrict,
+        project: r.projectName,
+        sectors: r.sectorCount,
+        awcCount: r.awcCount,
+        totalChildren: r.totalChildren,
+        itemCategory: itemCategory,
+        requestedAmt: numAmount,
+        allocateAmount: 0,
+        fundAllocated: 0,
+        status: 'PENDING',
+        applicationDate: new Date().toLocaleDateString('en-GB'),
+        requestedBy: `DSWO ${currentDistrict}`,
+        purpose: `Requisition demand for ${itemCategory} for ${r.totalChildren.toLocaleString('en-IN')} preschool children under ${r.projectName} (${r.awcCount} AWCs) in ${currentDistrict} district [FY ${financialYear}]`,
+      };
+    });
 
-    setAllocatedData((prev) => [newRequest, ...prev]);
+    setAllocatedData((prev) => [...newRequests, ...prev]);
     toast.success(
-      `Requisition for ${selectedAwcCount} AWCs with ${selectedTotalChildren.toLocaleString('en-IN')} children submitted successfully!`
+      `Requisition for ${selectedProjectsCount} project(s) with ${selectedTotalChildren.toLocaleString('en-IN')} children submitted successfully!`
     );
 
     // Reset inputs
@@ -225,8 +297,8 @@ export const RequisitionList: React.FC = () => {
     setSelectedIds([]);
   };
 
-  // Reusable Table Columns for DSWO (Project, Sector, AWC, Total Children - No Amount)
-  const columns = useMemo<MRT_ColumnDef<RequisitionAwcRow>[]>(
+  // Table Columns for Project-wise Requisition (Project Name, Sectors count, AWCs count, Total Children)
+  const columns = useMemo<MRT_ColumnDef<RequisitionProjectRow>[]>(
     () => [
       /* 1. Selection Master / Row Checkbox */
       {
@@ -234,7 +306,7 @@ export const RequisitionList: React.FC = () => {
         header: 'Select',
         Header: () => {
           const isAllSelected =
-            awcData.length > 0 && selectedIds.length === awcData.length;
+            projectSummaryData.length > 0 && selectedIds.length === projectSummaryData.length;
           const isSomeSelected =
             selectedIds.length > 0 && !isAllSelected;
 
@@ -283,8 +355,8 @@ export const RequisitionList: React.FC = () => {
                     ? 'bg-primary border-primary text-white shadow-xs'
                     : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-primary/60'
                 }`}
-                title={isSelected ? `Deselect ${row.original.awcName}` : `Select ${row.original.awcName}`}
-                aria-label={`Select ${row.original.awcName}`}
+                title={isSelected ? `Deselect ${row.original.projectName}` : `Select ${row.original.projectName}`}
+                aria-label={`Select ${row.original.projectName}`}
               >
                 {isSelected && <Check size={11} strokeWidth={3} />}
               </button>
@@ -308,12 +380,12 @@ export const RequisitionList: React.FC = () => {
         ),
       },
 
-      /* 3. Project Column */
+      /* 3. Project Column (Project Name) */
       {
-        accessorKey: 'project',
+        accessorKey: 'projectName',
         header: 'Project',
-        size: 160,
-        minSize: 130,
+        size: 220,
+        minSize: 180,
         Cell: ({ cell, row }) => {
           const isSelected = selectedIds.includes(row.original.id);
           return (
@@ -328,33 +400,42 @@ export const RequisitionList: React.FC = () => {
         },
       },
 
-      /* 4. Sector Column */
+      /* 4. Sector Column (Total sectors under this project) */
       {
-        accessorKey: 'sector',
+        accessorKey: 'sectorCount',
         header: 'Sector',
         size: 110,
-        minSize: 95,
+        minSize: 90,
+        muiTableHeadCellProps: { align: 'center' },
+        muiTableBodyCellProps: { align: 'center' },
         Cell: ({ cell }) => (
-          <span className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
-            {cell.getValue<string>()}
-          </span>
+          <div className="w-full text-center font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+            {cell.getValue<number>()}
+          </div>
         ),
       },
 
-      /* 5. AWC Column */
+      /* 5. AWC Column (Total AWCs under this project - Hover blue & underline, Click opens modal) */
       {
-        accessorKey: 'awcName',
+        accessorKey: 'awcCount',
         header: 'AWC',
-        size: 240,
-        minSize: 190,
-        Cell: ({ row }) => (
-          <div>
-            <span className="font-semibold text-slate-900 dark:text-slate-100 block text-xs sm:text-sm">
-              {row.original.awcName}
-            </span>
-            <span className="text-[11px] text-slate-400 font-mono">
-              {row.original.awcCode}
-            </span>
+        size: 110,
+        minSize: 90,
+        muiTableHeadCellProps: { align: 'center' },
+        muiTableBodyCellProps: { align: 'center' },
+        Cell: ({ cell, row }) => (
+          <div className="w-full text-center">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalProject(row.original);
+              }}
+              className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline underline-offset-4 cursor-pointer transition-colors py-0.5 px-1 rounded inline-block"
+              title={`Click to view AWCs under ${row.original.projectName}`}
+            >
+              {cell.getValue<number>()}
+            </button>
           </div>
         ),
       },
@@ -363,8 +444,8 @@ export const RequisitionList: React.FC = () => {
       {
         accessorKey: 'totalChildren',
         header: 'Total Children',
-        size: 110,
-        minSize: 95,
+        size: 130,
+        minSize: 100,
         muiTableHeadCellProps: { align: 'right' },
         muiTableBodyCellProps: { align: 'right' },
         Cell: ({ cell, row }) => {
@@ -381,7 +462,7 @@ export const RequisitionList: React.FC = () => {
         },
       },
     ],
-    [awcData, selectedIds, handleToggleSelectAll, handleToggleRow]
+    [projectSummaryData, selectedIds, handleToggleSelectAll, handleToggleRow]
   );
 
   return (
@@ -421,19 +502,19 @@ export const RequisitionList: React.FC = () => {
               />
             </div>
 
-            {/* 3. District (Fixed to DSWO district) */}
+            {/* 3. Requisition Date (Prefilled current date) */}
             <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-              <Input
-                id="requisition-district"
-                name="district"
-                label="District"
-                value={financialYear ? currentDistrict : ''}
-                placeholder={financialYear ? currentDistrict : 'Auto-filled on FY select'}
+              <DatePicker
+                id="requisition-date"
+                name="requisitionDate"
+                label="Date"
+                placeholder="DD/MM/YYYY"
+                value={todayIsoDate}
                 disabled
               />
             </div>
 
-            {/* 4. Total Children (Dynamically computed sum of children from selected AWCs) */}
+            {/* 4. Total Children (Dynamically computed sum of children from selected Projects) */}
             <div className="col-span-12 sm:col-span-6 lg:col-span-3">
               <Input
                 id="requisition-total-children"
@@ -450,15 +531,15 @@ export const RequisitionList: React.FC = () => {
             </div>
           </div>
 
-          {/* DSWO Project, Sector & AWC Reusable Table (Shown once Financial Year and Category are selected) */}
+          {/* DSWO Project-wise Requisition Reusable Table (Shown once Financial Year and Category are selected) */}
           {financialYear && itemCategory && (
             <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800 animate-in fade-in duration-200">
               <ReusableTable
                 columns={columns}
-                data={awcData}
+                data={projectSummaryData}
                 enableRowActions={false}
                 enableExport={true}
-                exportFileName={`${currentDistrict.toLowerCase()}_requisition_awc_breakdown`}
+                exportFileName={`${currentDistrict.toLowerCase()}_requisition_project_breakdown`}
               />
             </div>
           )}
@@ -496,6 +577,37 @@ export const RequisitionList: React.FC = () => {
           />
         </div>
       </Card>
+
+      {/* Anganwadi Centers (AWC) Breakdown Modal */}
+      <Modal
+        isOpen={isAwcModalOpen}
+        onClose={() => setModalProject(null)}
+        title={`Anganwadi Centers (${modalProject?.projectName || currentDistrict})`}
+        subtitle={`Showing ${modalAwcList.length} AWCs across ${modalProject?.sectorCount || 0} sector(s) for FY ${financialYear || 'Selected FY'}`}
+        size="3xl"
+        footer={
+          <div className="flex justify-end w-full">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => setModalProject(null)}
+            >
+              Close
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <ReusableTable
+            columns={awcModalColumns}
+            data={modalAwcList}
+            enableRowActions={false}
+            enableExport={true}
+            exportFileName={`${modalProject?.projectName.toLowerCase().replace(/\s+/g, '_') || currentDistrict.toLowerCase()}_awc_centers`}
+          />
+        </div>
+      </Modal>
     </div>
   );
 };

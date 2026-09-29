@@ -13,7 +13,6 @@ import {
   Filter,
   Building2,
   MapPin,
-  Building,
   Users,
   IndianRupee,
   BarChart2,

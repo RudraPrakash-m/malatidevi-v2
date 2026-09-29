@@ -30,6 +30,7 @@ const FINANCIAL_YEAR_OPTIONS = [
 const ITEM_CATEGORY_OPTIONS = [
   { label: 'Uniform', value: 'Uniform' },
   { label: 'Sweater', value: 'Sweater' },
+  { label: 'Shoes & Socks', value: 'Shoes & Socks' },
 ];
 
 const ITEM_PRICES: Record<string, number> = {

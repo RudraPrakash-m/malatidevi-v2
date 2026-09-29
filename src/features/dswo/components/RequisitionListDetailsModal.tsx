@@ -36,7 +36,7 @@ export const RequisitionListDetailsModal: React.FC<RequisitionListDetailsModalPr
   if (!selectedItem) return null;
 
   const formattedStatus = formatRequisitionStatus(selectedItem.status);
-  const requestedAmt = selectedItem.requestedAmt || 0;
+  // const requestedAmt = selectedItem.requestedAmt || 0;
   const alreadyAllocated =
     selectedItem.fundAllocated ??
     (typeof selectedItem.allocateAmount === 'number'
@@ -80,7 +80,7 @@ export const RequisitionListDetailsModal: React.FC<RequisitionListDetailsModalPr
               <MapPin size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
               <span>{selectedItem.district} District</span>
               <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
-                ({selectedItem.project} Projects)
+                ({typeof selectedItem.project === 'string' && selectedItem.project.startsWith('Project') ? selectedItem.project : `Project ${String(selectedItem.project).padStart(2, '0')}`})
               </span>
             </h3>
           </div>
@@ -134,10 +134,12 @@ export const RequisitionListDetailsModal: React.FC<RequisitionListDetailsModalPr
           <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-0.5">
               <Layers size={12} className="text-blue-500" />
-              <span>Projects</span>
+              <span>Project</span>
             </div>
             <p className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
-              {selectedItem.project}
+              {typeof selectedItem.project === 'string' && selectedItem.project.startsWith('Project')
+                ? selectedItem.project
+                : `Project ${String(selectedItem.project).padStart(2, '0')}`}
             </p>
           </div>
 

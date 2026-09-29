@@ -35,6 +35,31 @@ const SECTOR_LABEL_MAP: Record<string, string> = {
   sector_3: 'Sector 3',
 };
 
+/* State Provided Fund Limits by FY & Category */
+const STATE_PROVIDED_FUNDS: Record<string, Record<string, number>> = {
+  '2025-26': {
+    sw: 2450000,
+    uniform: 3500000,
+    shoes_socks: 1500000,
+  },
+  '2026-27': {
+    sw: 2550000,
+    uniform: 3650000,
+    shoes_socks: 1550000,
+  },
+  '2027-28': {
+    sw: 2700000,
+    uniform: 3850000,
+    shoes_socks: 1650000,
+  },
+};
+
+const STATE_SECTOR_FUNDS: Record<string, number> = {
+  sector_1: 480000,
+  sector_2: 520000,
+  sector_3: 450000,
+};
+
 /* -------------------------------------------------------------
    Mock Database: Projects (for SW / Uniform)
 ------------------------------------------------------------- */
@@ -222,6 +247,7 @@ const AWC_CENTER_DATABASE: Record<string, AwcCenterItem[]> = {
 
 const FundAllocationn: React.FC = () => {
   // Form Selection States
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState<string>('2025-26');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedProject, setSelectedProject] = useState<string>('project_1');
   const [selectedSector, setSelectedSector] = useState<string>('');
@@ -248,15 +274,29 @@ const FundAllocationn: React.FC = () => {
     return cat === 'sw' || cat === 'uniform';
   }, [selectedCategory]);
 
+  // Amount provided by state based on selected Financial Year, Category, and Sector
+  const stateProvidedAmount = useMemo(() => {
+    if (!selectedCategory) return 0;
+    const fy = selectedFinancialYear || '2025-26';
+    if (isShoeCategory && selectedSector) {
+      return STATE_SECTOR_FUNDS[selectedSector] || 500000;
+    }
+    const catFunds = STATE_PROVIDED_FUNDS[fy] || STATE_PROVIDED_FUNDS['2025-26'];
+    return (
+      catFunds[selectedCategory] ||
+      (selectedCategory === 'uniform' ? 3500000 : selectedCategory === 'sw' ? 2450000 : 1500000)
+    );
+  }, [selectedCategory, selectedFinancialYear, isShoeCategory, selectedSector]);
+
   const initialDefaultValues = useMemo(
     () => ({
-      financialYear: '2025-26',
-      project: 'project_1',
-      sector: '',
-      category: '',
-      amount: '',
+      financialYear: selectedFinancialYear,
+      project: selectedProject,
+      sector: selectedSector,
+      category: selectedCategory,
+      amount: stateProvidedAmount > 0 ? stateProvidedAmount : '',
     }),
-    []
+    [selectedFinancialYear, selectedProject, selectedSector, selectedCategory, stateProvidedAmount]
   );
 
   // Dynamic Form Fields:
@@ -323,29 +363,32 @@ const FundAllocationn: React.FC = () => {
       });
     }
 
-    // Amount is kept for all categories
+    // Amount is prefilled with State Provided Funds and disabled
     fields.push({
       name: 'amount',
-      label: 'Amount (₹)',
+      label: 'Amount (₹) (Provided by State)',
       type: 'number',
-      required: true,
-      placeholder: 'e.g. 45000',
-      min: 1,
+      disabled: true,
+      placeholder:
+        stateProvidedAmount > 0
+          ? String(stateProvidedAmount)
+          : 'Select category to view state fund',
       gridColumn: isShoeCategory ? 3 : 4,
-      validation: {
-        required: true,
-        message: 'Please enter a valid disbursement amount',
-      },
     });
 
     return fields;
-  }, [isShoeCategory]);
+  }, [isShoeCategory, stateProvidedAmount]);
 
   // Handle Form values change
   const handleValuesChange = (values: Record<string, unknown>) => {
+    const fy = (values.financialYear as string) || '2025-26';
     const cat = (values.category as string) || '';
     const proj = (values.project as string) || 'project_1';
     const sect = (values.sector as string) || '';
+
+    if (fy !== selectedFinancialYear) {
+      setSelectedFinancialYear(fy);
+    }
 
     if (cat !== selectedCategory) {
       setSelectedCategory(cat);
@@ -371,7 +414,7 @@ const FundAllocationn: React.FC = () => {
 
   // Form submit handler
   const handleDisburse = (data: Record<string, any>, context?: any) => {
-    const numAmount = Number(data.amount);
+    const numAmount = Number(data.amount || stateProvidedAmount);
     const catLabel = CATEGORY_LABEL_MAP[data.category] || data.category;
 
     setIsSubmitting(true);
@@ -414,6 +457,9 @@ const FundAllocationn: React.FC = () => {
     );
   }, [selectedProjectRows]);
 
+  const isProjectAmountExceeded =
+    stateProvidedAmount > 0 && totalSelectedProjectAmount > stateProvidedAmount;
+
   const handleToggleProject = (id: string) => {
     setSelectedProjectIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -438,6 +484,18 @@ const FundAllocationn: React.FC = () => {
   const handleAllocateProjects = () => {
     if (selectedProjectIds.length === 0) {
       toast.warning('Please select at least one project.');
+      return;
+    }
+
+    if (totalSelectedProjectAmount === 0) {
+      toast.warning('Please allocate an amount for selected project(s).');
+      return;
+    }
+
+    if (isProjectAmountExceeded) {
+      toast.error(
+        `Total allocated amount (₹${totalSelectedProjectAmount.toLocaleString('en-IN')}) exceeds the State Provided Amount (₹${stateProvidedAmount.toLocaleString('en-IN')}).`
+      );
       return;
     }
 
@@ -690,6 +748,9 @@ const FundAllocationn: React.FC = () => {
     }
   }, [selectedAwcIds, currentAwcList]);
 
+  const isAwcAmountExceeded =
+    stateProvidedAmount > 0 && totalSelectedAwcAmount > stateProvidedAmount;
+
   const handleAwcAmountChange = (id: string, newAmount: number | '') => {
     setCustomAwcAmounts((prev) => ({
       ...prev,
@@ -700,6 +761,18 @@ const FundAllocationn: React.FC = () => {
   const handleAllocateAwc = () => {
     if (selectedAwcIds.length === 0) {
       toast.warning('Please select at least one AWC center.');
+      return;
+    }
+
+    if (totalSelectedAwcAmount === 0) {
+      toast.warning('Please allocate an amount for selected center(s).');
+      return;
+    }
+
+    if (isAwcAmountExceeded) {
+      toast.error(
+        `Total allocated amount (₹${totalSelectedAwcAmount.toLocaleString('en-IN')}) exceeds the State Provided Amount (₹${stateProvidedAmount.toLocaleString('en-IN')}).`
+      );
       return;
     }
 
@@ -943,6 +1016,34 @@ const FundAllocationn: React.FC = () => {
                     {selectedProjectIds.length} of {PROJECT_DATABASE.length} Projects Selected
                   </span>
                 </div>
+
+                {/* Live Selected Metrics & State Fund Comparison */}
+                <div className="flex items-center gap-3 text-xs flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">State Provided Fund:</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">
+                      ₹{stateProvidedAmount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <span className="text-slate-300 dark:text-slate-600">|</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Total Allocated:</span>
+                    <span
+                      className={`font-mono font-bold text-sm ${
+                        isProjectAmountExceeded
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                      }`}
+                    >
+                      ₹{totalSelectedProjectAmount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  {isProjectAmountExceeded && (
+                    <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                      Exceeds State Fund by ₹{(totalSelectedProjectAmount - stateProvidedAmount).toLocaleString('en-IN')}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -954,27 +1055,31 @@ const FundAllocationn: React.FC = () => {
               />
             </div>
 
-            {/* Allocation Action Footer */}
-            <div className="flex justify-end gap-3 pt-2">
+            {/* Allocation Action Footer - Centered */}
+            <div className="flex items-center justify-center gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                label="Reset Selection"
+                label="Reset"
                 icon={<RotateCcw size={15} />}
                 onClick={() => {
                   setSelectedProjectIds([]);
                   setCustomProjectAmounts({});
                   toast.info('Selections reset.');
                 }}
-                disabled={selectedProjectIds.length === 0}
+                disabled={selectedProjectIds.length === 0 && Object.keys(customProjectAmounts).length === 0}
               />
               <Button
                 type="button"
                 variant="primary"
-                label={`Allocate Funds (${selectedProjectIds.length} Projects)`}
+                label="Allocate"
                 icon={<CheckCircle2 size={16} />}
                 onClick={handleAllocateProjects}
-                disabled={selectedProjectIds.length === 0}
+                disabled={
+                  selectedProjectIds.length === 0 ||
+                  totalSelectedProjectAmount === 0 ||
+                  isProjectAmountExceeded
+                }
               />
             </div>
           </div>
@@ -996,7 +1101,7 @@ const FundAllocationn: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Live Selected Metrics */}
+                {/* Live Selected Metrics & State Fund Comparison */}
                 <div className="flex items-center gap-3 text-xs flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <span className="text-slate-500 dark:text-slate-400">Total Children:</span>
@@ -1006,11 +1111,29 @@ const FundAllocationn: React.FC = () => {
                   </div>
                   <span className="text-slate-300 dark:text-slate-600">|</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-slate-500 dark:text-slate-400">Allocated Amount:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">State Provided Fund:</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">
+                      ₹{stateProvidedAmount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <span className="text-slate-300 dark:text-slate-600">|</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Total Allocated:</span>
+                    <span
+                      className={`font-mono font-bold text-sm ${
+                        isAwcAmountExceeded
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                      }`}
+                    >
                       ₹{totalSelectedAwcAmount.toLocaleString('en-IN')}
                     </span>
                   </div>
+                  {isAwcAmountExceeded && (
+                    <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                      Exceeds State Fund by ₹{(totalSelectedAwcAmount - stateProvidedAmount).toLocaleString('en-IN')}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -1023,27 +1146,31 @@ const FundAllocationn: React.FC = () => {
               />
             </div>
 
-            {/* Allocation Action Footer */}
-            <div className="flex justify-end gap-3 pt-2">
+            {/* Allocation Action Footer - Centered */}
+            <div className="flex items-center justify-center gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                label="Reset Selection"
+                label="Reset"
                 icon={<RotateCcw size={15} />}
                 onClick={() => {
                   setSelectedAwcIds([]);
                   setCustomAwcAmounts({});
                   toast.info('Selections reset.');
                 }}
-                disabled={selectedAwcIds.length === 0}
+                disabled={selectedAwcIds.length === 0 && Object.keys(customAwcAmounts).length === 0}
               />
               <Button
                 type="button"
                 variant="primary"
-                label={`Allocate Funds (${selectedAwcIds.length} Centers)`}
+                label="Allocate"
                 icon={<CheckCircle2 size={16} />}
                 onClick={handleAllocateAwc}
-                disabled={selectedAwcIds.length === 0}
+                disabled={
+                  selectedAwcIds.length === 0 ||
+                  totalSelectedAwcAmount === 0 ||
+                  isAwcAmountExceeded
+                }
               />
             </div>
           </div>

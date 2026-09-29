@@ -13,12 +13,16 @@ import Card from '@/shared/components/layout/Card';
 import Select from '@/shared/components/ui/Forms/Select';
 import { ReusableTable } from '@/shared/components/ui/Table';
 import Button from '@/shared/components/ui/Button';
+import Modal from '@/shared/components/ui/Modal';
 import { RequisitionListDetailsModal } from './RequisitionListDetailsModal';
 import {
   type FundRequestItem,
-  formatStatusText,
-  getDistrictInitialData,
 } from '@/features/state/pages/FundRequestList';
+import {
+  getDistrictAwcList,
+  getRequisitionInitialData,
+  type RequisitionAwcRow,
+} from '../services/requisitionData';
 
 /* ---------------------------------------------
    Filter Options for DSWO Requisition List
@@ -50,7 +54,8 @@ const STATUS_FILTER_OPTIONS = [
    Columns for DSWO Requisition List
 --------------------------------------------- */
 const getRequisitionListColumns = (
-  handleOpenDetails: (item: FundRequestItem) => void
+  handleOpenDetails: (item: FundRequestItem) => void,
+  handleOpenAwcModal: (item: FundRequestItem) => void
 ): MRT_ColumnDef<FundRequestItem>[] => [
     /* 1. Sl. No */
     {
@@ -82,7 +87,7 @@ const getRequisitionListColumns = (
       ),
     },
 
-    /* 3. Item Category (Just after Financial Year) */
+    /* 3. Item Category */
     {
       accessorKey: 'itemCategory',
       header: 'Item Category',
@@ -125,43 +130,58 @@ const getRequisitionListColumns = (
     {
       accessorKey: 'project',
       header: 'Project',
-      size: 65,
-      minSize: 50,
-      muiTableHeadCellProps: { align: 'right' },
-      muiTableBodyCellProps: { align: 'right' },
-      Cell: ({ cell }) => (
-        <div className="w-full text-right font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">
-          {cell.getValue<number | string>()}
-        </div>
-      ),
+      size: 190,
+      minSize: 150,
+      Cell: ({ cell }) => {
+        const val = cell.getValue<string | number>();
+        const formatted =
+          typeof val === 'string' && val.startsWith('Project')
+            ? val
+            : `Project ${String(val).padStart(2, '0')}`;
+        return (
+          <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+            {formatted}
+          </span>
+        );
+      },
     },
 
     /* 6. Sector */
     {
       accessorKey: 'sectors',
       header: 'Sector',
-      size: 65,
-      minSize: 50,
-      muiTableHeadCellProps: { align: 'right' },
-      muiTableBodyCellProps: { align: 'right' },
+      size: 80,
+      minSize: 65,
+      muiTableHeadCellProps: { align: 'center' },
+      muiTableBodyCellProps: { align: 'center' },
       Cell: ({ cell }) => (
-        <div className="w-full text-right font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+        <div className="w-full text-center font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
           {cell.getValue<number>()}
         </div>
       ),
     },
 
-    /* 7. AWC */
+    /* 7. AWC (Clickable with blue hover & underline) */
     {
       accessorKey: 'awcCount',
       header: 'AWC',
-      size: 70,
-      minSize: 55,
-      muiTableHeadCellProps: { align: 'right' },
-      muiTableBodyCellProps: { align: 'right' },
-      Cell: ({ cell }) => (
-        <div className="w-full text-right font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">
-          {(cell.getValue<number>() ?? 0).toLocaleString('en-IN')}
+      size: 85,
+      minSize: 70,
+      muiTableHeadCellProps: { align: 'center' },
+      muiTableBodyCellProps: { align: 'center' },
+      Cell: ({ cell, row }) => (
+        <div className="w-full text-center">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenAwcModal(row.original);
+            }}
+            className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:underline underline-offset-4 cursor-pointer transition-colors py-0.5 px-1 rounded inline-block font-mono"
+            title={`Click to view AWCs under ${row.original.project}`}
+          >
+            {(cell.getValue<number>() ?? 0).toLocaleString('en-IN')}
+          </button>
         </div>
       ),
     },
@@ -268,7 +288,7 @@ export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> =
 }) => {
   const activeDistrict = district || districtName || 'Khordha';
   const [localData] = useState<FundRequestItem[]>(() =>
-    getDistrictInitialData(activeDistrict)
+    getRequisitionInitialData(activeDistrict)
   );
 
   const rawData = propData || localData;
@@ -290,6 +310,13 @@ export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> =
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<FundRequestItem | null>(null);
 
+  // AWC Centers Breakdown Modal State
+  const [selectedAwcModalItem, setSelectedAwcModalItem] = useState<{
+    projectName: string;
+    financialYear: string;
+    awcs: RequisitionAwcRow[];
+  } | null>(null);
+
   const handleOpenDetails = (item: FundRequestItem) => {
     setSelectedItem(item);
     setIsModalOpen(true);
@@ -299,6 +326,105 @@ export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> =
     setIsModalOpen(false);
     setSelectedItem(null);
   };
+
+  // Open AWC Modal for project
+  const handleOpenAwcModal = (item: FundRequestItem) => {
+    const list = getDistrictAwcList(item.district || activeDistrict, item.financialYear || '2026-27');
+    const projectStr = String(item.project || '');
+
+    const filtered = list.filter((a) => {
+      if (projectStr.includes('Project 01') || projectStr === '1') return a.project.includes('Project 01');
+      if (projectStr.includes('Project 02') || projectStr === '2') return a.project.includes('Project 02');
+      if (projectStr.includes('Project 03') || projectStr === '3') return a.project.includes('Project 03');
+      return true;
+    });
+
+    const displayProjectName =
+      typeof item.project === 'string' && item.project.startsWith('Project')
+        ? item.project
+        : `Project ${String(item.project).padStart(2, '0')} (${item.district || activeDistrict})`;
+
+    setSelectedAwcModalItem({
+      projectName: displayProjectName,
+      financialYear: item.financialYear,
+      awcs: filtered.length > 0 ? filtered : list,
+    });
+  };
+
+  const handleCloseAwcModal = () => {
+    setSelectedAwcModalItem(null);
+  };
+
+  // Modal Table Columns for AWC Centers breakdown
+  const awcModalColumns = useMemo<MRT_ColumnDef<RequisitionAwcRow>[]>(
+    () => [
+      {
+        accessorKey: 'id',
+        header: 'Sl. No',
+        size: 70,
+        minSize: 60,
+        muiTableHeadCellProps: { align: 'center' },
+        muiTableBodyCellProps: { align: 'center' },
+        Cell: ({ row }) => (
+          <div className="w-full text-center font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {row.index + 1}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'project',
+        header: 'Project',
+        size: 160,
+        minSize: 130,
+        Cell: ({ cell }) => (
+          <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+            {cell.getValue<string>()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'sector',
+        header: 'Sector',
+        size: 120,
+        minSize: 100,
+        Cell: ({ cell }) => (
+          <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+            {cell.getValue<string>()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'awcName',
+        header: 'Anganwadi Center (AWC)',
+        size: 240,
+        minSize: 200,
+        Cell: ({ row }) => (
+          <div>
+            <span className="font-semibold text-slate-900 dark:text-slate-100 block text-xs sm:text-sm">
+              {row.original.awcName}
+            </span>
+            <span className="text-[11px] text-slate-400 font-mono">
+              {row.original.awcCode}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'totalChildren',
+        header: 'Total Children',
+        size: 130,
+        minSize: 100,
+        muiTableHeadCellProps: { align: 'right' },
+        muiTableBodyCellProps: { align: 'right' },
+        Cell: ({ cell }) => (
+          <div className="w-full text-right font-mono text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+            {(cell.getValue<number>() ?? 0).toLocaleString('en-IN')}
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
   // Filter action handlers
   const handleApplyFilter = () => {
@@ -349,8 +475,8 @@ export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> =
 
   // Columns definition
   const columns = useMemo(
-    () => getRequisitionListColumns(handleOpenDetails),
-    []
+    () => getRequisitionListColumns(handleOpenDetails, handleOpenAwcModal),
+    [handleOpenDetails, handleOpenAwcModal]
   );
 
   return (
@@ -432,6 +558,37 @@ export const DswoRequisitionListTable: React.FC<DswoRequisitionListTableProps> =
         onClose={handleCloseDetails}
         selectedItem={selectedItem}
       />
+
+      {/* Anganwadi Centers (AWC) Breakdown Modal */}
+      <Modal
+        isOpen={Boolean(selectedAwcModalItem)}
+        onClose={handleCloseAwcModal}
+        title={`Anganwadi Centers (${selectedAwcModalItem?.projectName || activeDistrict})`}
+        subtitle={`Showing ${selectedAwcModalItem?.awcs.length || 0} AWCs for FY ${selectedAwcModalItem?.financialYear || 'Selected FY'}`}
+        size="3xl"
+        footer={
+          <div className="flex justify-end w-full">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={handleCloseAwcModal}
+            >
+              Close
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <ReusableTable
+            columns={awcModalColumns}
+            data={selectedAwcModalItem?.awcs || []}
+            enableRowActions={false}
+            enableExport={true}
+            exportFileName={`${selectedAwcModalItem?.projectName.toLowerCase().replace(/\s+/g, '_') || activeDistrict.toLowerCase()}_awc_centers`}
+          />
+        </div>
+      </Modal>
     </>
   );
 };
